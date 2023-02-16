@@ -17,8 +17,9 @@ object ZeCommands : CompositeCommand(Indicator, "ze") {
     @SubCommand("ub")
     @Description("显示 UB社区 服务器列表")
     suspend fun CommandSender.ub() {
-        //webresponse = webforub()
-        sendMessage("Under Construction")
+        sendMessage("获取服务器信息中，请稍等几秒")
+        webresponse = webforub()
+        sendMessage(webresponse)
     }
 
     @SubCommand("zed")
