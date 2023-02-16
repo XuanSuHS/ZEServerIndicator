@@ -12,13 +12,10 @@ version = "0.1.2"
 repositories {
     maven("https://maven.aliyun.com/repository/public")
     maven("https://mvnrepository.com/repos/central")
-    //mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     compileOnly("com.squareup.okhttp3:okhttp:4.10.0")
-    //implementation("org.eclipse.jetty.websocket:websocket-client:9.4.50.v20221201")
-    //implementation("org.springframework.boot:spring-boot-starter-websocket:3.0.2")
-    //implementation("org.java-websocket:Java-WebSocket:1.5.3")
 }
