@@ -80,7 +80,7 @@ fun webforub():String {
             }
         }
     })
-    Thread.sleep(2000)
+    Thread.sleep(7000)
     websocket.cancel()
     return response
 }
