@@ -82,6 +82,7 @@ fun webforub():String {
     })
     Thread.sleep(7000)
     websocket.cancel()
+    if (response.length <= 20) {return "UB爆炸辣"}
     return response
 }
 
