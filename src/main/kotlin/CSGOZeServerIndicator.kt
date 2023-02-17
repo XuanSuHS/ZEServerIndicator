@@ -13,7 +13,7 @@ object Indicator : KotlinPlugin(
     JvmPluginDescription(
         id = "top.xuansu.mirai.ze-server-indicator",
         name = "CSGO Ze Server Indicator",
-        version = "0.1.3",
+        version = "0.1.3.1",
     ) {
         author("XuanSu")
     }

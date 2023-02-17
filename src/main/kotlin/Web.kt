@@ -63,9 +63,11 @@ fun webforub():String {
                     // 剔除非 ZE 模式信息
                     if (serverMode == "1") {
                         val serverName = serverData.get("name").toString().replace("\"", "")
+                        val tscore = serverData.get("t_score").toString()
+                        val ctscore = serverData.get("ct_score").toString()
                         val map = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
                         val nextmap = serverData.get("nextmap").asJsonObject.get("name").toString().replace("\"", "")
-                        val serverNametoresp = serverName.replace(" Q群 749180050", "")
+                        val serverNametoresp = serverName.replace(" Q群 749180050", "").replace("UB社区 ","")
                         var nextmaptoresp = "下张地图：$nextmap\n"
                         //如果当前地图名字等于下张地图名字（即没RTV）则不显示下张图
                         if(map == nextmap || nextmap.length <= 3) {nextmaptoresp = ""}
@@ -74,7 +76,7 @@ fun webforub():String {
                         val playerArray = serverData.get("clients").asJsonArray
                         val players = playerArray.size()
 
-                        response = response.plus("\n$serverNametoresp  $players/64\n地图：$map\n$nextmaptoresp")
+                        response = response.plus("\n$serverNametoresp  人数:$players/64\n地图：$map\n$nextmaptoresp").plus("比分：$tscore/$ctscore\n")
                     }
                 }
             }
@@ -148,7 +150,7 @@ fun webforzed():String {
         val players = serverDataJSON.asJsonObject.get("Players").toString()
         val map = serverDataJSON.asJsonObject.get("Map").toString()
 
-        serverString = serverString.plus(serverName+"  $players/64"+"\n").plus("地图:$map\n").plus("地址:$serveraddress\n").plus(nextMap).plus(nominateMap).plus("\n")
+        serverString = serverString.plus(serverName+"  $players/64"+"\n").plus("地图：$map\n").plus("地址：$serveraddress\n").plus(nextMap).plus(nominateMap).plus("\n")
     }
     return serverString.replace("\"", "")
 }
