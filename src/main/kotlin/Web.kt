@@ -8,7 +8,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
-fun webfor5e(): String {
+fun webfortopze(): String {
     //TODO:token从文件传入
     val token = "fec9d45f7416256443b5e051c200fc1d"
     val baseurl = "https://api-clan.rushbgogogo.com/api/v1/systemApp/gameServerRoomsList?mode=ze"
@@ -121,7 +121,10 @@ fun webforzed():String {
         var nextMap = server.asJsonObject.get("nextMap").toString().replace("\"", "")
         var nominateMap = server.asJsonObject.get("nominateMap").toString().replace("\"", "")
         //如果没有则不显示这两个字段
-        if (nextMap.contains("暂无")) {nextMap = ""} else {nextMap = "下张地图：$nextMap\n"
+        nextMap = if (nextMap.contains("暂无")) {
+            ""
+        } else {
+            "下张地图：$nextMap\n"
         }
         nominateMap = if (nominateMap.contains("暂无")) {
             ""
