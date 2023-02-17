@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "top.xuansu.mirai.zeServerIndicator"
-version = "0.1.3.1"
+version = "0.1.4"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")
