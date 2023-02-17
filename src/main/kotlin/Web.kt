@@ -148,7 +148,7 @@ fun webforzed():String {
         val players = serverDataJSON.asJsonObject.get("Players").toString()
         val map = serverDataJSON.asJsonObject.get("Map").toString()
 
-        serverString = serverString.plus(serverName+"\n").plus("人数:$players\n").plus("地图:$map\n").plus("地址:$serveraddress\n").plus(nextMap).plus(nominateMap).plus("\n\n")
+        serverString = serverString.plus(serverName+"\n").plus("人数:$players\n").plus("地图:$map\n").plus("地址:$serveraddress\n").plus(nextMap).plus(nominateMap).plus("\n")
     }
     return serverString.replace("\"", "")
 }
