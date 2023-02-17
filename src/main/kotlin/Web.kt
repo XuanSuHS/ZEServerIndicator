@@ -68,13 +68,13 @@ fun webforub():String {
                         val serverNametoresp = serverName.replace(" Q群 749180050", "")
                         var nextmaptoresp = "下张地图：$nextmap\n"
                         //如果当前地图名字等于下张地图名字（即没RTV）则不显示下张图
-                        if(map == nextmap) {nextmaptoresp = ""}
+                        if(map == nextmap || nextmap.length <= 3) {nextmaptoresp = ""}
 
                         //根据player数组里的个数获取人数
                         val playerArray = serverData.get("clients").asJsonArray
                         val players = playerArray.size()
 
-                        response = response.plus("\n$serverNametoresp\n人数：$players\n地图：$map\n$nextmaptoresp")
+                        response = response.plus("\n$serverNametoresp  $players/64\n地图：$map\n$nextmaptoresp")
                     }
                 }
             }
@@ -148,7 +148,7 @@ fun webforzed():String {
         val players = serverDataJSON.asJsonObject.get("Players").toString()
         val map = serverDataJSON.asJsonObject.get("Map").toString()
 
-        serverString = serverString.plus(serverName+"\n").plus("人数:$players\n").plus("地图:$map\n").plus("地址:$serveraddress\n").plus(nextMap).plus(nominateMap).plus("\n")
+        serverString = serverString.plus(serverName+"  $players/64"+"\n").plus("地图:$map\n").plus("地址:$serveraddress\n").plus(nextMap).plus(nominateMap).plus("\n")
     }
     return serverString.replace("\"", "")
 }
