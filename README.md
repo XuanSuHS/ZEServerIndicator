@@ -4,6 +4,7 @@
 使用命令的权限：top.xuansu.mirai.ze-server-indicator.ze
 
 命令：
+
 /ze topze or /topze 显示TOPZE社区服务器信息
 
 /ze ub or /ub       显示UB社区服务器信息
