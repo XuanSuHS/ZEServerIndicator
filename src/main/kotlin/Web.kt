@@ -112,7 +112,7 @@ fun webforzed():String {
         //跳过ServerList中非 ZE/ZM 服务器
         if (server.asJsonObject.get("serverGroupSortNumber").toString() != "1") {continue}
         //确定并跳过 ZM 服务器
-        val serverName = server.asJsonObject.get("serverName").toString()
+        val serverName = server.asJsonObject.get("serverName").toString().replace("僵尸逃跑 ","")
         if (serverName.contains("ZM")) {continue}
         //寻找ServerList中需要的JSON项
         val ip = server.asJsonObject.get("ip").toString()
