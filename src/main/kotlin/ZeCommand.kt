@@ -14,14 +14,21 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     private var webresponse = ""
 
     @SubCommand("topze")
-    @Description("显示 5e TOPZE社区 服务器列表")
+    @Description("5e TOPZE社区 服务器列表")
     suspend fun CommandSender.topze() {
         webresponse = webfortopze()
         sendMessage(webresponse)
     }
 
+    @SubCommand("5e")
+    @Description("5e TOPZE社区 服务器列表")
+    suspend fun CommandSender.fe() {
+        webresponse = webfortopze()
+        sendMessage(webresponse)
+    }
+
     @SubCommand("ub")
-    @Description("显示 UB社区 服务器列表")
+    @Description("UB社区 服务器列表")
     suspend fun CommandSender.ub() {
         sendMessage("获取服务器信息中，请稍等几秒")
         webresponse = webforub()
@@ -29,7 +36,7 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     }
 
     @SubCommand("zed")
-    @Description("显示 僵尸乐园社区 服务器列表")
+    @Description("僵尸乐园社区 服务器列表")
     suspend fun CommandSender.zed() {
         webresponse = webforzed()
         sendMessage(webresponse)
@@ -62,6 +69,18 @@ class TopzeCommand(perm: Permission) : SimpleCommand(
     }
 }
 
+class FeCommand(perm: Permission) : SimpleCommand(
+    owner = Indicator,
+    primaryName = "5e",
+    parentPermission = perm
+) {
+    @Handler
+    suspend fun CommandSender.handle() {
+        val webresponse = webfortopze()
+        sendMessage(webresponse)
+    }
+}
+
 class ZedCommand(perm: Permission) : SimpleCommand(
     owner = Indicator,
     primaryName = "zed",
@@ -70,6 +89,18 @@ class ZedCommand(perm: Permission) : SimpleCommand(
     @Handler
     suspend fun CommandSender.handle() {
         val webresponse = webforzed()
+        sendMessage(webresponse)
+    }
+}
+
+class fysCommand(perm: Permission) : SimpleCommand(
+    owner = Indicator,
+    primaryName = "Fy\$",
+    parentPermission = perm
+) {
+    @Handler
+    suspend fun CommandSender.handle() {
+        val webresponse = webforfys()
         sendMessage(webresponse)
     }
 }

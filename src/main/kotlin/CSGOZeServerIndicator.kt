@@ -13,7 +13,7 @@ object Indicator : KotlinPlugin(
     JvmPluginDescription(
         id = "top.xuansu.mirai.ze-server-indicator",
         name = "CSGO Ze Server Indicator",
-        version = "0.1.4",
+        version = "0.1.5",
     ) {
         author("XuanSu")
     }
@@ -24,7 +24,9 @@ object Indicator : KotlinPlugin(
         ZeCommand(zepermission).register()
         UbCommand(zepermission).register()
         TopzeCommand(zepermission).register()
+        FeCommand(zepermission).register()
         ZedCommand(zepermission).register()
+        fysCommand(zepermission).register()
         logger.info { "ZE Server Indicator 已启动" }
     }
 

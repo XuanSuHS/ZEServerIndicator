@@ -31,7 +31,7 @@ fun webfortopze(): String {
         val name = server.asJsonObject.get("Name").toString()
         val playerCount = server.asJsonObject.get("PlayerCount").toString()
         val gameMap = server.asJsonObject.get("GameMap").toString()
-        serverString = serverString.plus("$name  ").plus(playerCount+"人\n").plus(gameMap).plus("\n\n")
+        serverString = serverString.plus("\n\n$name  ").plus(playerCount+"人\n").plus(gameMap)
     }
     return serverString.replace("\"", "")
 }
@@ -76,7 +76,7 @@ fun webforub():String {
                         val playerArray = serverData.get("clients").asJsonArray
                         val players = playerArray.size()
 
-                        response = response.plus("\n$serverNametoresp  人数:$players/64\n地图：$map\n$nextmaptoresp").plus("比分：$tscore/$ctscore\n")
+                        response = response.plus("\n$serverNametoresp  人数:$players/64\n地图：$map\n比分：$tscore/$ctscore\n\n$nextmaptoresp")
                     }
                 }
             }
@@ -110,18 +110,18 @@ fun webforzed():String {
 
 
     for (i in 0 until serverlistresponseDataJSON.size()) {
-        val server = serverlistresponseDataJSON.get(i)
+        val server = serverlistresponseDataJSON.get(i).asJsonObject
         //跳过ServerList中非 ZE/ZM 服务器
-        if (server.asJsonObject.get("serverGroupSortNumber").toString() != "1") {continue}
+        if (server.get("serverGroupSortNumber").toString() != "1") {continue}
         //确定并跳过 ZM 服务器
-        val serverName = server.asJsonObject.get("serverName").toString().replace("僵尸逃跑 ","")
+        val serverName = server.get("serverName").toString().replace("僵尸逃跑 ","")
         if (serverName.contains("ZM")) {continue}
         //寻找ServerList中需要的JSON项
-        val ip = server.asJsonObject.get("ip").toString()
-        val port = server.asJsonObject.get("port").toString()
+        val ip = server.get("ip").toString()
+        val port = server.get("port").toString()
         //单独处理地图相关字段
-        var nextMap = server.asJsonObject.get("nextMap").toString().replace("\"", "")
-        var nominateMap = server.asJsonObject.get("nominateMap").toString().replace("\"", "")
+        var nextMap = server.get("nextMap").toString().replace("\"", "")
+        var nominateMap = server.get("nominateMap").toString().replace("\"", "")
         //如果没有则不显示这两个字段
         nextMap = if (nextMap.contains("暂无")) {
             ""
@@ -147,10 +147,40 @@ fun webforzed():String {
         val serverData = serverinforesponse.body!!.string()
         val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
         //寻找服务器详细数据中需要的项
-        val players = serverDataJSON.asJsonObject.get("Players").toString()
-        val map = serverDataJSON.asJsonObject.get("Map").toString()
+        val players = serverDataJSON.get("Players").toString()
+        val map = serverDataJSON.get("Map").toString()
 
-        serverString = serverString.plus(serverName+"  $players/64"+"\n").plus("地图：$map\n").plus("地址：$serveraddress\n").plus(nextMap).plus(nominateMap).plus("\n")
+        serverString = serverString.plus("\n$serverName  $players/64\n").plus("地图：$map\n").plus("地址：$serveraddress\n").plus(nextMap).plus(nominateMap)
     }
     return serverString.replace("\"", "")
+}
+
+fun webforfys():String {
+    val token = "swallowtail"
+    val baseurl = "https://fyscs.com/silverwing/system/dashboard"
+    //构建http请求
+    val okHttpclient = OkHttpClient.Builder().build()
+    val request = Request.Builder()
+        .url(baseurl)
+        .header("X-Client", token)
+        .get()
+        .build()
+    val response = okHttpclient.newCall(request).execute()
+    val responseData = response.body!!.string()
+    var serverString = "   [风云社 ZE 服务器数据]"
+    response.close()
+    val serverDataArray = JsonParser.parseString(responseData).asJsonObject.get("servers").asJsonArray
+    for (i in 0 until  serverDataArray.size()) {
+        val server = serverDataArray.get(i).asJsonObject
+        //排除非ZE服务器
+        if(server.get("modeId").toString() != "1001") {continue}
+        val serverName = server.get("name").toString().replace("\"", "")
+        val serverMap = server.get("map").toString().replace("\"", "")
+        val currentPlayers = server.get("currentPlayers").toString()
+        val maxPlayers = server.get("maxPlayers").toString()
+        val host = server.get("host").toString().replace("\"", "")
+        val port = server.get("port").toString()
+        serverString = serverString.plus("\n\n$serverName").plus(" 人数：$currentPlayers/$maxPlayers\n").plus("地图：$serverMap\n").plus("地址：$host:$port")
+    }
+    return serverString
 }
