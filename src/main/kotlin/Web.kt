@@ -76,7 +76,7 @@ fun webforub():String {
                         val playerArray = serverData.get("clients").asJsonArray
                         val players = playerArray.size()
 
-                        response = response.plus("\n$serverNametoresp  人数:$players/64\n地图：$map\n比分：$tscore/$ctscore\n\n$nextmaptoresp")
+                        response = response.plus("\n【$serverNametoresp】 $players/64\n地图：$map\n比分：$tscore/$ctscore\n$nextmaptoresp")
                     }
                 }
             }
