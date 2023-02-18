@@ -24,7 +24,7 @@ fun webfortopze(): String {
     response.close()
     //将请求转换为JsonObject并提取其中message数组部分
     val responseDataJSON = JsonParser.parseString(responseData).asJsonObject.getAsJsonArray("message")
-    var serverString = "   [5e ZE 服务器数据]\n\n"
+    var serverString = "   [5e ZE 服务器数据]"
     //遍历数组中每一项中所需的数据
     for (i in 0 until responseDataJSON.size()){
         val server = responseDataJSON.get(i)
@@ -105,7 +105,7 @@ fun webforzed():String {
     //变换ServerList 返回数据
     val serverlistresponseData = serverlistresponse.body!!.string()
     val serverlistresponseDataJSON = JsonParser.parseString(serverlistresponseData).asJsonArray
-    var serverString = "   [僵尸乐园 ZE 服务器数据]\n\n"
+    var serverString = "   [僵尸乐园 ZE 服务器数据]\n"
 
     //构建 每个服务器的具体数据 请求
     val serverinfobaseurl = "http://zombieden.cn/getserverinfo.php?address="
