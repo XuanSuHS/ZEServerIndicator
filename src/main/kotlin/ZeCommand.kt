@@ -31,7 +31,7 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     @Description("UB社区 服务器列表")
     suspend fun CommandSender.ub() {
         sendMessage("获取服务器信息中，请稍等几秒")
-        webresponse = webforub()
+        webresponse = ub.webforub()
         sendMessage(webresponse)
     }
 
@@ -52,7 +52,7 @@ class UbCommand(perm: Permission) : SimpleCommand(
     @Handler
     suspend fun CommandSender.handle() {
         sendMessage("获取服务器信息中，请稍等几秒")
-        val webresponse = webforub()
+        val webresponse = ub.webforub()
         sendMessage(webresponse)
     }
 }

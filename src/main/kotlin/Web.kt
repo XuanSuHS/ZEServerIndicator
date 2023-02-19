@@ -36,60 +36,62 @@ fun webfortopze(): String {
     return serverString.replace("\"", "")
 }
 
-fun webforub():String {
-    val okHttpClient = OkHttpClient.Builder().build()
-    val baseurl = "ws://app.moeub.com/ws?files=3"
-    val request = Request.Builder()
-        .get()
-        .url(baseurl)
-        .header("User-Agent","Moeub Client")
-        .build()
-    var response = "   [UB 社区 ZE 服务器数据]"
-    //构建websocket客户端
-    val websocket = okHttpClient.newWebSocket(request, object : WebSocketListener(){
-        //在websocket连接收到返回信息时执行
-        override fun onMessage(webSocket: WebSocket, text: String) {
-            super.onMessage(webSocket, text)
-            //转数据为json
-            val serverJSON = JsonParser.parseString(text).asJsonObject
-            val serverInit = serverJSON.get("event").toString().replace("\"", "")
-            //剔除非服务器信息
-            if (serverInit == "server/init") {
-                val serverData = serverJSON.get("data").asJsonObject
-                val serverappid = serverData.get("appid").toString().replace("\"", "")
-                //剔除非 CSGO 服务器信息
-                if (serverappid == "730") {
-                    val serverMode = serverData.get("mode").toString().replace("\"", "")
-                    // 剔除非 ZE 模式信息
-                    if (serverMode == "1") {
-                        val serverName = serverData.get("name").toString().replace("\"", "")
-                        val tscore = serverData.get("t_score").toString()
-                        val ctscore = serverData.get("ct_score").toString()
+object ub {
+    var serverNameArr = emptyArray<String>()
+    fun webforub():String {
+        val okHttpClient = OkHttpClient.Builder().build()
+        val baseurl = "ws://app.moeub.com/ws?files=3"
+        val request = Request.Builder()
+            .get()
+            .url(baseurl)
+            .header("User-Agent","Moeub Client")
+            .build()
+        var response = "   [UB 社区 ZE 服务器数据]"
+        //构建websocket客户端
+        val websocket = okHttpClient.newWebSocket(request, object : WebSocketListener(){
+            //在websocket连接收到返回信息时执行
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                super.onMessage(webSocket, text)
+                //转数据为json
+                val serverJSON = JsonParser.parseString(text).asJsonObject
+                val serverInit = serverJSON.get("event").toString().replace("\"", "")
+                //剔除非服务器信息
+                if (serverInit == "server/init") {
+                    val serverData = serverJSON.get("data").asJsonObject
+                    val serverappid = serverData.get("appid").toString().toInt()
+                    //剔除非 CSGO 服务器信息
+                    if (serverappid == 730) {
+                        val serverMode = serverData.get("mode").toString().toInt()
+                        // 剔除非 ZE 模式信息
+                        if (serverMode == 1) {
+                            val serverName = serverData.get("name").toString().replace("\"", "")
+                            val tscore = serverData.get("t_score").toString().toInt()
+                            val ctscore = serverData.get("ct_score").toString().toInt()
 
-                        val map = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
-                        val serverNametoresp = serverName.replace(" Q群 749180050", "").replace("UB社区 ","")
+                            val map = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
+                            val serverNametoresp = serverName.replace(" Q群 749180050", "").replace("UB社区 ","")
 
-                        val nextmap = serverData.get("nextmap").asJsonObject.get("name").toString().replace("\"", "")
-                        var nextmaptoresp = "\n下张地图：$nextmap"
-                        //如果当前地图名字等于下张地图名字（即没RTV）则不显示下张图
-                        if(map == nextmap || nextmap.length <= 3) {nextmaptoresp = ""}
+                            val nextmap = serverData.get("nextmap").asJsonObject.get("name").toString().replace("\"", "")
+                            var nextmaptoresp = "\n下张地图：$nextmap"
+                            //如果当前地图名字等于下张地图名字（即没RTV）则不显示下张图
+                            if(map == nextmap || nextmap.length <= 3) {nextmaptoresp = ""}
 
-                        //根据player数组里的个数获取人数
-                        val playerArray = serverData.get("clients").asJsonArray
-                        val players = playerArray.size()
+                            //根据player数组里的个数获取人数
+                            val playerArray = serverData.get("clients").asJsonArray
+                            val players = playerArray.size()
 
-                        response = response.plus("\n------------------------------\n【$serverNametoresp】 $players/64\n地图：$map\n比分：$tscore/$ctscore$nextmaptoresp")
+                            response = response.plus("\n------------------------------\n【$serverNametoresp】 $players/64\n地图：$map\n比分：$tscore/$ctscore$nextmaptoresp")
+                        }
                     }
                 }
             }
-        }
-    })
-    Thread.sleep(7000)
-    websocket.cancel()
-    if (response.length <= 20) {return "UB爆炸辣"}
-    return response
+        })
+        Thread.sleep(7000)
+        websocket.cancel()
+        if (response.length <= 20) {return "UB爆炸辣"}
+        return response
+    }
 }
-
 
 fun webforzed():String {
     //构建ServerList 请求
