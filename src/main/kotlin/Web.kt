@@ -55,40 +55,46 @@ object ub {
                 //转数据为json
                 val serverJSON = JsonParser.parseString(text).asJsonObject
                 val serverInit = serverJSON.get("event").toString().replace("\"", "")
-                //剔除非服务器信息
-                if (serverInit == "server/init") {
+                //for的原因是不合条件时跳出，if太恶心了
+                //只执行一次
+                for (i in 1 until 2) {
+                    //剔除非服务器信息
+                    if (serverInit != "server/init") {continue}
+
+                    //提取JSON中服务器数据
                     val serverData = serverJSON.get("data").asJsonObject
-                    val serverappid = serverData.get("appid").toString().toInt()
+
                     //剔除非 CSGO 服务器信息
-                    if (serverappid == 730) {
-                        val serverMode = serverData.get("mode").toString().toInt()
-                        // 剔除非 ZE 模式信息
-                        if (serverMode == 1) {
-                            val serverName = serverData.get("name").toString().replace("\"", "")
-                            val tscore = serverData.get("t_score").toString().toInt()
-                            val ctscore = serverData.get("ct_score").toString().toInt()
+                    val serverappid = serverData.get("appid").toString().toInt()
+                    if (serverappid != 730) {continue}
 
-                            val map = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
-                            val serverNametoresp = serverName.replace(" Q群 749180050", "").replace("UB社区 ","")
+                    // 剔除非 ZE 模式信息
+                    val serverMode = serverData.get("mode").toString().toInt()
+                    if (serverMode != 1) {continue}
 
-                            val nextmap = serverData.get("nextmap").asJsonObject.get("name").toString().replace("\"", "")
-                            var nextmaptoresp = "\n下张地图：$nextmap"
-                            //如果当前地图名字等于下张地图名字（即没RTV）则不显示下张图
-                            if(map == nextmap || nextmap.length <= 3) {nextmaptoresp = ""}
+                    val serverName = serverData.get("name").toString().replace("\"", "")
+                    val tscore = serverData.get("t_score").toString().toInt()
+                    val ctscore = serverData.get("ct_score").toString().toInt()
 
-                            //根据player数组里的个数获取人数
-                            val playerArray = serverData.get("clients").asJsonArray
-                            val players = playerArray.size()
+                    val map = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
+                    val serverNametoresp = serverName.replace(" Q群 749180050", "").replace("UB社区 ","")
 
-                            response = response.plus("\n------------------------------\n【$serverNametoresp】 $players/64\n地图：$map\n比分：$tscore/$ctscore$nextmaptoresp")
-                        }
-                    }
+                    val nextmap = serverData.get("nextmap").asJsonObject.get("name").toString().replace("\"", "")
+                    var nextmaptoresp = "\n下张地图：$nextmap"
+                    //如果当前地图名字等于下张地图名字（即没RTV）则不显示下张图
+                    if(map == nextmap || nextmap.length <= 3) {nextmaptoresp = ""}
+
+                    //根据player数组里的个数获取人数
+                    val playerArray = serverData.get("clients").asJsonArray
+                    val players = playerArray.size()
+
+                    response = response.plus("\n------------------------------\n【$serverNametoresp】 $players/64\n地图：$map\n比分：$tscore/$ctscore$nextmaptoresp")
                 }
             }
         })
         Thread.sleep(7000)
         websocket.cancel()
-        if (response.length <= 20) {return "UB爆炸辣"}
+        //if (response.length <= 20) {return "UB爆炸辣"}
         return response
     }
 }
