@@ -36,7 +36,7 @@ fun webfortopze(): String {
     return serverString.replace("\"", "")
 }
 
-object ub {
+object UB {
     //因为数组从0开始，偷个懒不用转换了
     var serverNameArr = arrayOfNulls<String>(12)
     var tscoreArr = arrayOfNulls<Int>(12)
