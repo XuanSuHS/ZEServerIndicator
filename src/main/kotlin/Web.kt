@@ -37,7 +37,14 @@ fun webfortopze(): String {
 }
 
 object ub {
-    var serverNameArr = emptyArray<String>()
+    //因为数组从0开始，偷个懒不用转换了
+    var serverNameArr = arrayOfNulls<String>(12)
+    var tscoreArr = arrayOfNulls<Int>(12)
+    var ctscoreArr = arrayOfNulls<Int>(12)
+    var serverMapArr = arrayOfNulls<String>(12)
+    var serverNextMapArr = arrayOfNulls<String>(12)
+    var serverPlayerArr = arrayOfNulls<Int>(12)
+
     fun webforub():String {
         val okHttpClient = OkHttpClient.Builder().build()
         val baseurl = "ws://app.moeub.com/ws?files=3"
@@ -49,9 +56,11 @@ object ub {
         var response = "   [UB 社区 ZE 服务器数据]"
         //构建websocket客户端
         val websocket = okHttpClient.newWebSocket(request, object : WebSocketListener(){
+
             //在websocket连接收到返回信息时执行
             override fun onMessage(webSocket: WebSocket, text: String) {
                 super.onMessage(webSocket, text)
+
                 //转数据为json
                 val serverJSON = JsonParser.parseString(text).asJsonObject
                 val serverInit = serverJSON.get("event").toString().replace("\"", "")
@@ -72,22 +81,36 @@ object ub {
                     val serverMode = serverData.get("mode").toString().toInt()
                     if (serverMode != 1) {continue}
 
-                    val serverName = serverData.get("name").toString().replace("\"", "")
-                    val tscore = serverData.get("t_score").toString().toInt()
-                    val ctscore = serverData.get("ct_score").toString().toInt()
+                    //查询是哪个服务器
+                    val serverNumber = serverData.get("id").toString().toInt()
+                    //val serverNumber = 6
 
-                    val map = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
-                    val serverNametoresp = serverName.replace(" Q群 749180050", "").replace("UB社区 ","")
+                    //将服务器名写入数组
+                    serverNameArr[serverNumber] = serverData.get("name").toString().replace("\"", "")
+                    val serverName = serverNameArr[serverNumber]
 
-                    val nextmap = serverData.get("nextmap").asJsonObject.get("name").toString().replace("\"", "")
+                    //将比分写入数组
+                    tscoreArr[serverNumber] = serverData.get("t_score").toString().toInt()
+                    ctscoreArr[serverNumber] = serverData.get("ct_score").toString().toInt()
+                    val tscore = tscoreArr[serverNumber]
+                    val ctscore = ctscoreArr[serverNumber]
+
+                    //将地图写入数组
+                    serverMapArr[serverNumber] = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
+                    serverNextMapArr[serverNumber] = serverData.get("nextmap").asJsonObject.get("name").toString().replace("\"", "")
+                    val map = serverMapArr[serverNumber]
+                    val nextmap = serverNextMapArr[serverNumber]
+
+                    //根据player数组里的个数获取人数,将人数写入数组
+                    serverPlayerArr[serverNumber] = serverData.get("clients").asJsonArray.size()
+                    val players = serverPlayerArr[serverNumber]
+
+                    val serverNametoresp = serverName!!.replace(" Q群 749180050", "").replace("UB社区 ","")
                     var nextmaptoresp = "\n下张地图：$nextmap"
                     //如果当前地图名字等于下张地图名字（即没RTV）则不显示下张图
-                    if(map == nextmap || nextmap.length <= 3) {nextmaptoresp = ""}
+                    if(map == nextmap || nextmap!!.length <= 3) {nextmaptoresp = ""}
 
-                    //根据player数组里的个数获取人数
-                    val playerArray = serverData.get("clients").asJsonArray
-                    val players = playerArray.size()
-
+                    //response = response.plus("\n$serverName\n服务器：$serverNumber")
                     response = response.plus("\n------------------------------\n【$serverNametoresp】 $players/64\n地图：$map\n比分：$tscore/$ctscore$nextmaptoresp")
                 }
             }
