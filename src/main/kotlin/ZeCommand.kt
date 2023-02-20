@@ -31,14 +31,14 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     @Description("UB社区 服务器列表")
     suspend fun CommandSender.ub() {
         sendMessage("获取服务器信息中，请稍等几秒")
-        webresponse = UB.webforub()
+        webresponse = UB.dataOutput()
         sendMessage(webresponse)
     }
 
-    @SubCommand("zed")
+    @SubCommand("Zed")
     @Description("僵尸乐园社区 服务器列表")
     suspend fun CommandSender.zed() {
-        webresponse = webforzed()
+        webresponse = Zed.dataOutput()
         sendMessage(webresponse)
     }
 }
@@ -51,8 +51,7 @@ class UbCommand(perm: Permission) : SimpleCommand(
 
     @Handler
     suspend fun CommandSender.handle() {
-        sendMessage("获取服务器信息中，请稍等几秒")
-        val webresponse = UB.webforub()
+        val webresponse = UB.dataOutput()
         sendMessage(webresponse)
     }
 }
@@ -83,12 +82,12 @@ class FeCommand(perm: Permission) : SimpleCommand(
 
 class ZedCommand(perm: Permission) : SimpleCommand(
     owner = Indicator,
-    primaryName = "zed",
+    primaryName = "Zed",
     parentPermission = perm
 ) {
     @Handler
     suspend fun CommandSender.handle() {
-        val webresponse = webforzed()
+        val webresponse = Zed.dataOutput()
         sendMessage(webresponse)
     }
 }

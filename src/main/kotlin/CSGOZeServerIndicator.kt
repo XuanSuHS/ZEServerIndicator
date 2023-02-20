@@ -9,11 +9,11 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.utils.info
 
-object Indicator : KotlinPlugin(
+object Indicator: KotlinPlugin(
     JvmPluginDescription(
         id = "top.xuansu.mirai.ze-server-indicator",
         name = "CSGO Ze Server Indicator",
-        version = "0.1.5",
+        version = "0.1.6",
     ) {
         author("XuanSu")
     }
@@ -28,6 +28,7 @@ object Indicator : KotlinPlugin(
         ZedCommand(zepermission).register()
         fysCommand(zepermission).register()
         logger.info { "ZE Server Indicator 已启动" }
+        coroutine()
     }
 
     override fun onDisable() {

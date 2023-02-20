@@ -1,12 +1,11 @@
 package top.xuansu.mirai.zeServerIndicator
 
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
+import top.xuansu.mirai.zeServerIndicator.Indicator.logger
 
 fun webfortopze(): String {
     //TODO:token从文件传入
@@ -38,24 +37,95 @@ fun webfortopze(): String {
 
 object UB {
     //因为数组从0开始，偷个懒不用转换了
-    var serverNameArr = arrayOfNulls<String>(12)
-    var tscoreArr = arrayOfNulls<Int>(12)
-    var ctscoreArr = arrayOfNulls<Int>(12)
-    var serverMapArr = arrayOfNulls<String>(12)
-    var serverNextMapArr = arrayOfNulls<String>(12)
-    var serverPlayerArr = arrayOfNulls<Int>(12)
+    private var serverNameArr = Array(12) { "" }
 
-    fun webforub():String {
-        val okHttpClient = OkHttpClient.Builder().build()
+
+    private var tscoreArr = Array(12) { 0 }
+    private var ctscoreArr = Array(12) { 0 }
+    private var serverMapArr = Array(12) { "" }
+    private var serverNextMapArr = Array(12) { "" }
+    private var serverPlayerArr = Array(12) { 0 }
+
+    var wsfail = false
+
+    //Event "server/init"
+    //即客户端初始化
+    fun serverInit(serverJSON:JsonObject) {
+
+        //logger.info("server init triggered")
+        //提取JSON中服务器数据
+        val serverData = serverJSON.get("data").asJsonObject
+
+        //剔除非 CSGO 服务器信息
+        val serverappid = serverData.get("appid").toString().toInt()
+        if (serverappid != 730) {return}
+
+        // 剔除非 ZE 模式信息
+        val serverMode = serverData.get("mode").toString().toInt()
+        if (serverMode != 1) {return}
+
+        //查询是哪个服务器
+        val serverNumber = serverData.get("id").toString().toInt()
+
+        //将服务器名写入数组
+        serverNameArr[serverNumber] = serverData.get("name").toString().replace("\"", "").replace(" Q群 749180050", "").replace("UB社区 ","")
+
+        //将比分写入数组
+        tscoreArr[serverNumber] = serverData.get("t_score").toString().toInt()
+        ctscoreArr[serverNumber] = serverData.get("ct_score").toString().toInt()
+
+        //将地图写入数组
+        serverMapArr[serverNumber] = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
+        serverNextMapArr[serverNumber] = serverData.get("nextmap").asJsonObject.get("name").toString().replace("\"", "")
+
+        //根据player数组里的个数获取人数,将人数写入数组
+        serverPlayerArr[serverNumber] = serverData.get("clients").asJsonArray.size()
+    }
+
+    //Event "server/client/connected"
+    //即玩家连接到服务器
+    fun clientconnect(serverJSON: JsonObject) {
+        //logger.info("Client Connect triggered")
+        serverPlayerArr[serverJSON.get("server").toString().toInt()] += 1
+    }
+
+    //Event "server/client/disconnect"
+    //即玩家断开连接
+    fun clientdisconnect(serverJSON: JsonObject) {
+        //logger.info("Client Disconnect triggered")
+        serverPlayerArr[serverJSON.get("server").toString().toInt()] -= 1
+    }
+
+    //Event "server/nextmap/changed"
+    //即 RTV 选定下张图
+    fun nextMapChange(serverJSON: JsonObject) {
+        //logger.info("Next Map Change triggered")
+        serverNextMapArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
+    }
+
+    //Event "server/map/start"
+    //下张图开始
+    fun mapStart(serverJSON: JsonObject) {
+        //logger.info("Map Start triggered")
+        serverMapArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
+    }
+
+    fun webforub() {
+        val okHttpClient = OkHttpClient.Builder()
+            .build()
         val baseurl = "ws://app.moeub.com/ws?files=3"
         val request = Request.Builder()
             .get()
             .url(baseurl)
             .header("User-Agent","Moeub Client")
             .build()
-        var response = "   [UB 社区 ZE 服务器数据]"
         //构建websocket客户端
         val websocket = okHttpClient.newWebSocket(request, object : WebSocketListener(){
+
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                super.onOpen(webSocket, response)
+                logger.info("Websocket Connection Enabled")
+            }
 
             //在websocket连接收到返回信息时执行
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -63,130 +133,143 @@ object UB {
 
                 //转数据为json
                 val serverJSON = JsonParser.parseString(text).asJsonObject
-                val serverInit = serverJSON.get("event").toString().replace("\"", "")
-                //for的原因是不合条件时跳出，if太恶心了
-                //只执行一次
-                for (i in 1 until 2) {
-                    //剔除非服务器信息
-                    if (serverInit != "server/init") {continue}
+                val event = serverJSON.get("event").toString().replace("\"", "")
+                //根据返回Event确定动作
+                if (event == "server/init") {
+                    serverInit(serverJSON)}
 
-                    //提取JSON中服务器数据
-                    val serverData = serverJSON.get("data").asJsonObject
+                if (event == "server/client/connected") {
+                    clientconnect(serverJSON)}
 
-                    //剔除非 CSGO 服务器信息
-                    val serverappid = serverData.get("appid").toString().toInt()
-                    if (serverappid != 730) {continue}
+                if (event == "server/client/disconnect") {
+                    clientdisconnect(serverJSON)}
 
-                    // 剔除非 ZE 模式信息
-                    val serverMode = serverData.get("mode").toString().toInt()
-                    if (serverMode != 1) {continue}
+                if (event == "server/nextmap/changed") {
+                    nextMapChange(serverJSON)}
 
-                    //查询是哪个服务器
-                    val serverNumber = serverData.get("id").toString().toInt()
-                    //val serverNumber = 6
-
-                    //将服务器名写入数组
-                    serverNameArr[serverNumber] = serverData.get("name").toString().replace("\"", "")
-                    val serverName = serverNameArr[serverNumber]
-
-                    //将比分写入数组
-                    tscoreArr[serverNumber] = serverData.get("t_score").toString().toInt()
-                    ctscoreArr[serverNumber] = serverData.get("ct_score").toString().toInt()
-                    val tscore = tscoreArr[serverNumber]
-                    val ctscore = ctscoreArr[serverNumber]
-
-                    //将地图写入数组
-                    serverMapArr[serverNumber] = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
-                    serverNextMapArr[serverNumber] = serverData.get("nextmap").asJsonObject.get("name").toString().replace("\"", "")
-                    val map = serverMapArr[serverNumber]
-                    val nextmap = serverNextMapArr[serverNumber]
-
-                    //根据player数组里的个数获取人数,将人数写入数组
-                    serverPlayerArr[serverNumber] = serverData.get("clients").asJsonArray.size()
-                    val players = serverPlayerArr[serverNumber]
-
-                    val serverNametoresp = serverName!!.replace(" Q群 749180050", "").replace("UB社区 ","")
-                    var nextmaptoresp = "\n下张地图：$nextmap"
-                    //如果当前地图名字等于下张地图名字（即没RTV）则不显示下张图
-                    if(map == nextmap || nextmap!!.length <= 3) {nextmaptoresp = ""}
-
-                    //response = response.plus("\n$serverName\n服务器：$serverNumber")
-                    response = response.plus("\n------------------------------\n【$serverNametoresp】 $players/64\n地图：$map\n比分：$tscore/$ctscore$nextmaptoresp")
+                if (event == "server/map/start") {
+                    mapStart(serverJSON)
                 }
+                
+            }
+
+            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                super.onClosing(webSocket, code, reason)
+                logger.info("Websocket Closed")
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                super.onFailure(webSocket, t, response)
+                wsfail = true
+                logger.info("WebSocket Connection Failed")
             }
         })
-        Thread.sleep(7000)
-        websocket.cancel()
-        //if (response.length <= 20) {return "UB爆炸辣"}
+        websocket.send("6")
+    }
+
+    fun dataOutput():String {
+        var response = "   [UB 社区 ZE 服务器数据]"
+        for (i in 1 until 12) {
+            //判定有没有定下张地图
+            if (serverNameArr[i] == "") {continue}
+            val serverNextMap = if (serverNextMapArr[i] == serverMapArr[i] || serverNextMapArr[i].length <= 3) {
+                ""
+            } else {
+                "\n下张地图：" + serverNextMapArr[i]
+            }
+
+            response += "\n------------------------------\n".plus(serverNameArr[i]).plus(" ").plus(serverPlayerArr[i]).plus("/64\n")
+                .plus("地图："+ serverMapArr[i] + "\n")
+                .plus("比分：" + ctscoreArr[i] + "/" + tscoreArr[i])
+                .plus(serverNextMap)
+        }
         return response
     }
 }
 
-fun webforzed():String {
-    //构建ServerList 请求
-    val okHttpclient = OkHttpClient.Builder().build()
-    val serverlistbaseurl = "http://zedbox.cn:5002/api/version/GetServerList"
-    val mediaType = "text/json;charset=utf-8".toMediaType()
-    val body = "".toRequestBody(mediaType)
-    val serverlistrequest = Request.Builder()
-        .url(serverlistbaseurl)
-        .post(body)
-        .build()
-    val serverlistresponse = okHttpclient.newCall(serverlistrequest).execute()
-    //变换ServerList 返回数据
-    val serverlistresponseData = serverlistresponse.body!!.string()
-    val serverlistresponseDataJSON = JsonParser.parseString(serverlistresponseData).asJsonArray
-    var serverString = "   [僵尸乐园 ZE 服务器数据]\n"
 
-    //构建 每个服务器的具体数据 请求
-    val serverinfobaseurl = "http://zombieden.cn/getserverinfo.php?address="
+object Zed {
 
-
-    for (i in 0 until serverlistresponseDataJSON.size()) {
-        val server = serverlistresponseDataJSON.get(i).asJsonObject
-        //跳过ServerList中非 ZE/ZM 服务器
-        if (server.get("serverGroupSortNumber").toString() != "1") {continue}
-        //确定并跳过 ZM 服务器
-        val serverName = server.get("serverName").toString().replace("僵尸逃跑 ","")
-        if (serverName.contains("ZM")) {continue}
-        //寻找ServerList中需要的JSON项
-        val ip = server.get("ip").toString()
-        val port = server.get("port").toString()
-        //单独处理地图相关字段
-        var nextMap = server.get("nextMap").toString().replace("\"", "")
-        var nominateMap = server.get("nominateMap").toString().replace("\"", "")
-        //如果没有则不显示这两个字段
-        nextMap = if (nextMap.contains("暂无")) {
-            ""
-        } else {
-            "下张地图：$nextMap\n"
-        }
-        nominateMap = if (nominateMap.contains("暂无")) {
-            ""
-        } else {
-            "预定地图：$nominateMap\n"
-        }
-
-
-        //根据服务器单独请求详细数据
-        val serveraddress = ip.replace("\"", "").plus(":$port")
-        val serverurl = serverinfobaseurl.plus(serveraddress)
-        val serverinforequest = Request.Builder()
-            .url(serverurl)
-            .get()
+    private var serverName = Array(7) {""}
+    private var serverAddress = Array(7) {""}
+    private var serverMap = Array(7) {""}
+    private var serverNextMap = Array(7) {""}
+    private var serverNominateMap = Array(7) {""}
+    private var serverPlayer = Array(7) {0}
+    fun webforZED() {
+        //构建ServerList 请求
+        val okHttpclient = OkHttpClient.Builder().build()
+        val serverListBaseURL = "http://zedbox.cn:5002/api/version/GetServerList"
+        val mediaType = "text/json;charset=utf-8".toMediaType()
+        val body = "".toRequestBody(mediaType)
+        val serverListRequest = Request.Builder()
+            .url(serverListBaseURL)
+            .post(body)
             .build()
-        //sleep() //防止服务器端出BUG
-        val serverinforesponse = okHttpclient.newCall(serverinforequest).execute()
-        val serverData = serverinforesponse.body!!.string()
-        val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
-        //寻找服务器详细数据中需要的项
-        val players = serverDataJSON.get("Players").toString()
-        val map = serverDataJSON.get("Map").toString()
+        val serverListResponse = okHttpclient.newCall(serverListRequest).execute()
+        //变换ServerList 返回数据
+        val serverListResponseData = serverListResponse.body!!.string()
 
-        serverString = serverString.plus("\n$serverName  $players/64\n").plus("地图：$map\n").plus("地址：$serveraddress\n").plus(nextMap).plus(nominateMap)
+        val serverListResponseDataJSON = JsonParser.parseString(serverListResponseData).asJsonArray
+        //
+        for (i in 0 until serverListResponseDataJSON.size()) {
+            val server = serverListResponseDataJSON.get(i).asJsonObject
+            //跳过ServerList中非 ZE/ZM 服务器
+            if (server.get("serverGroupSortNumber").toString() != "1") {continue}
+            //确定并跳过 ZM 服务器
+
+            if (server.get("serverName").toString().contains("ZM")) {continue}
+            //寻找ServerList中需要的JSON项
+            val serverNumber = server.get("serverID").toString().replace("\"", "").toInt().minus(100)
+            serverName[serverNumber] = server.get("serverName").toString().replace("\"","").replace(" 僵尸逃跑","")
+            serverAddress[serverNumber] = server.get("ip").toString().plus(":").plus(server.get("port").toString()).replace("\"", "")
+
+            //单独处理地图
+            //如果没有则不显示这两个字段
+            val nextMap = server.get("nextMap").toString().replace("\"", "")
+            serverMap[serverNumber] = if (nextMap.contains("暂无")) {
+                ""
+            } else {
+                "下张地图：$nextMap\n"
+            }
+            val nominateMap = server.get("nominateMap").toString().replace("\"", "")
+            serverNominateMap[serverNumber] = if (nominateMap.contains("暂无")) {
+                ""
+            } else {
+                "预定地图：$nominateMap\n"
+            }
+
+            //构建 每个服务器的具体数据 请求
+            val serverInfoBaseURL = "http://zombieden.cn/getserverinfo.php?address="
+            val serverURL = serverInfoBaseURL.plus(serverAddress[serverNumber])
+            //logger.info(serverURL)
+            val serverInfoRequest = Request.Builder()
+                .url(serverURL)
+                .get()
+                .build()
+            val serverinforesponse = okHttpclient.newCall(serverInfoRequest).execute()
+            val serverData = serverinforesponse.body!!.string()
+            if (!serverData.contains("HostName")) {return}
+            val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
+            //寻找服务器详细数据中需要的项
+            serverPlayer[serverNumber] = serverDataJSON.get("Players").toString().toInt()
+            serverMap[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
+        }
+        //logger.info("ZED Get Completed")
     }
-    return serverString.replace("\"", "")
+
+    fun dataOutput():String {
+        var response = "   [僵尸乐园 ZE 服务器数据]\n"
+        for ( i in 1 until 7) {
+            response += "\n".plus(serverName[i]).plus("  ").plus(serverPlayer[i].toString() + "/64\n")
+                .plus("地图："+ serverMap[i] + "\n")
+                .plus("地址：" + serverAddress[i] + "\n")
+                .plus(serverNextMap[i])
+        }
+        return response
+    }
 }
+
 
 fun webforfys():String {
     val token = "swallowtail"
