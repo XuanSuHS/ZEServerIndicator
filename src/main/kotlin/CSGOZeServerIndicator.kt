@@ -13,20 +13,23 @@ object Indicator: KotlinPlugin(
     JvmPluginDescription(
         id = "top.xuansu.mirai.ze-server-indicator",
         name = "CSGO Ze Server Indicator",
-        version = "0.1.6",
+        version = "0.1.7",
     ) {
         author("XuanSu")
     }
 ) {
     private lateinit var zepermission: Permission
+    private lateinit var OBJpermission: Permission
     override fun onEnable() {
         zepermission = PermissionService.INSTANCE.register(PermissionId(id,"ze"),"命令使用权限")
+        OBJpermission = PermissionService.INSTANCE.register(PermissionId(id,"OBJ"),"OBJ检测使用权限")
         ZeCommand(zepermission).register()
         UbCommand(zepermission).register()
         TopzeCommand(zepermission).register()
         FeCommand(zepermission).register()
         ZedCommand(zepermission).register()
         fysCommand(zepermission).register()
+        openOBJCommand(OBJpermission).register()
         logger.info { "ZE Server Indicator 已启动" }
         coroutine()
     }

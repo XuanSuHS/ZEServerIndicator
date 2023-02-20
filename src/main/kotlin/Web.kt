@@ -5,7 +5,6 @@ import com.google.gson.JsonParser
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
-import top.xuansu.mirai.zeServerIndicator.Indicator.logger
 
 fun webfortopze(): String {
     //TODO:token从文件传入
@@ -52,7 +51,6 @@ object UB {
     //即客户端初始化
     fun serverInit(serverJSON:JsonObject) {
 
-        //logger.info("server init triggered")
         //提取JSON中服务器数据
         val serverData = serverJSON.get("data").asJsonObject
 
@@ -85,28 +83,33 @@ object UB {
     //Event "server/client/connected"
     //即玩家连接到服务器
     fun clientconnect(serverJSON: JsonObject) {
-        //logger.info("Client Connect triggered")
         serverPlayerArr[serverJSON.get("server").toString().toInt()] += 1
     }
 
     //Event "server/client/disconnect"
     //即玩家断开连接
     fun clientdisconnect(serverJSON: JsonObject) {
-        //logger.info("Client Disconnect triggered")
         serverPlayerArr[serverJSON.get("server").toString().toInt()] -= 1
     }
 
     //Event "server/nextmap/changed"
     //即 RTV 选定下张图
     fun nextMapChange(serverJSON: JsonObject) {
-        //logger.info("Next Map Change triggered")
-        serverNextMapArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
+        val serverNumber = serverJSON.get("server").toString().toInt()
+        serverNextMapArr[serverNumber] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
+
+        //寻找OBJ!
+        if(!FindOBJ.FindON) {return}
+        if(FindOBJ.FindON && serverNextMapArr[serverNumber] != serverMapArr[serverNumber] && serverNextMapArr[serverNumber].contains("ze_obj")) {
+            FindOBJ.sendOBJtoGroup("UB社区" + serverNameArr[serverNumber],
+                "下张地图：" + serverNextMapArr[serverNumber],
+                serverPlayerArr[serverNumber])
+        }
     }
 
     //Event "server/map/start"
     //下张图开始
     fun mapStart(serverJSON: JsonObject) {
-        //logger.info("Map Start triggered")
         serverMapArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
     }
 
@@ -121,11 +124,6 @@ object UB {
             .build()
         //构建websocket客户端
         val websocket = okHttpClient.newWebSocket(request, object : WebSocketListener(){
-
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                super.onOpen(webSocket, response)
-                logger.info("Websocket Connection Enabled")
-            }
 
             //在websocket连接收到返回信息时执行
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -152,16 +150,9 @@ object UB {
                 }
                 
             }
-
-            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                super.onClosing(webSocket, code, reason)
-                logger.info("Websocket Closed")
-            }
-
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 super.onFailure(webSocket, t, response)
                 wsfail = true
-                logger.info("WebSocket Connection Failed")
             }
         })
         websocket.send("6")
@@ -178,24 +169,41 @@ object UB {
                 "\n下张地图：" + serverNextMapArr[i]
             }
 
-            response += "\n------------------------------\n".plus(serverNameArr[i]).plus(" ").plus(serverPlayerArr[i]).plus("/64\n")
+            response += "\n------------------------------\n".plus("【" + serverNameArr[i] + "】").plus(" ").plus(serverPlayerArr[i]).plus("/64\n")
                 .plus("地图："+ serverMapArr[i] + "\n")
                 .plus("比分：" + ctscoreArr[i] + "/" + tscoreArr[i])
                 .plus(serverNextMap)
         }
         return response
     }
+
+    //寻找OBJ
+    fun firstTimeFindOBJ() {
+        if (!FindOBJ.FindON) {return}
+        for (i in 1 until 12) {
+            val serverNumber = i
+            if (serverMapArr[serverNumber].contains("ze_obj")) {
+                FindOBJ.sendOBJtoGroup("UB社区 " + serverNameArr[serverNumber],
+                    "地图：" + serverMapArr[serverNumber],
+                    serverPlayerArr[serverNumber])
+            } else if (serverNextMapArr[serverNumber].contains("ze_obj")) {
+                FindOBJ.sendOBJtoGroup("UB社区 " + serverNameArr[serverNumber],
+                    "下张地图：" + serverNextMapArr[serverNumber],
+                    serverPlayerArr[serverNumber])
+            }
+        }
+    }
 }
 
 
 object Zed {
 
-    private var serverName = Array(7) {""}
-    private var serverAddress = Array(7) {""}
-    private var serverMap = Array(7) {""}
-    private var serverNextMap = Array(7) {""}
-    private var serverNominateMap = Array(7) {""}
-    private var serverPlayer = Array(7) {0}
+    private var serverNameArr = Array(7) {""}
+    private var serverAddressArr = Array(7) {""}
+    private var serverMapArr = Array(7) {""}
+    private var serverNextMapArr = Array(7) {""}
+    private var serverNominateMapArr = Array(7) {""}
+    private var serverPlayerArr = Array(7) {0}
     fun webforZED() {
         //构建ServerList 请求
         val okHttpclient = OkHttpClient.Builder().build()
@@ -221,19 +229,19 @@ object Zed {
             if (server.get("serverName").toString().contains("ZM")) {continue}
             //寻找ServerList中需要的JSON项
             val serverNumber = server.get("serverID").toString().replace("\"", "").toInt().minus(100)
-            serverName[serverNumber] = server.get("serverName").toString().replace("\"","").replace(" 僵尸逃跑","")
-            serverAddress[serverNumber] = server.get("ip").toString().plus(":").plus(server.get("port").toString()).replace("\"", "")
+            serverNameArr[serverNumber] = server.get("serverName").toString().replace("\"","").replace(" 僵尸逃跑","")
+            serverAddressArr[serverNumber] = server.get("ip").toString().plus(":").plus(server.get("port").toString()).replace("\"", "")
 
             //单独处理地图
             //如果没有则不显示这两个字段
             val nextMap = server.get("nextMap").toString().replace("\"", "")
-            serverMap[serverNumber] = if (nextMap.contains("暂无")) {
+            serverMapArr[serverNumber] = if (nextMap.contains("暂无")) {
                 ""
             } else {
                 "下张地图：$nextMap\n"
             }
             val nominateMap = server.get("nominateMap").toString().replace("\"", "")
-            serverNominateMap[serverNumber] = if (nominateMap.contains("暂无")) {
+            serverNominateMapArr[serverNumber] = if (nominateMap.contains("暂无")) {
                 ""
             } else {
                 "预定地图：$nominateMap\n"
@@ -241,8 +249,7 @@ object Zed {
 
             //构建 每个服务器的具体数据 请求
             val serverInfoBaseURL = "http://zombieden.cn/getserverinfo.php?address="
-            val serverURL = serverInfoBaseURL.plus(serverAddress[serverNumber])
-            //logger.info(serverURL)
+            val serverURL = serverInfoBaseURL.plus(serverAddressArr[serverNumber])
             val serverInfoRequest = Request.Builder()
                 .url(serverURL)
                 .get()
@@ -252,24 +259,39 @@ object Zed {
             if (!serverData.contains("HostName")) {return}
             val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
             //寻找服务器详细数据中需要的项
-            serverPlayer[serverNumber] = serverDataJSON.get("Players").toString().toInt()
-            serverMap[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
+            serverPlayerArr[serverNumber] = serverDataJSON.get("Players").toString().toInt()
+            serverMapArr[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
         }
-        //logger.info("ZED Get Completed")
     }
 
     fun dataOutput():String {
         var response = "   [僵尸乐园 ZE 服务器数据]\n"
         for ( i in 1 until 7) {
-            response += "\n".plus(serverName[i]).plus("  ").plus(serverPlayer[i].toString() + "/64\n")
-                .plus("地图："+ serverMap[i] + "\n")
-                .plus("地址：" + serverAddress[i] + "\n")
-                .plus(serverNextMap[i])
+            response += "\n".plus(serverNameArr[i]).plus("  ").plus(serverPlayerArr[i].toString() + "/64\n")
+                .plus("地图："+ serverMapArr[i] + "\n")
+                .plus("地址：" + serverAddressArr[i] + "\n")
+                .plus(serverNextMapArr[i])
         }
         return response
     }
-}
 
+    var hasOBJServerArr = Array(7) {false}
+    fun findOBJ() {
+        if (!FindOBJ.FindON) {return}
+        for (i in 1 until 7) {
+            if(!hasOBJServerArr[i] && (serverMapArr[i].contains("ze_Obj") || serverNextMapArr[i].contains("ze_Obj") || serverNominateMapArr[i].contains("ze_Obj"))) {
+                hasOBJServerArr[i] = true
+                FindOBJ.sendZEDOBJtoGroup(serverNameArr[i],
+                    "地图：" + serverMapArr[i]+ "\n",
+                    "下张地图" + serverNextMapArr[i]+ "\n",
+                    "预定地图" + serverNominateMapArr[i] + "\n",
+                    serverPlayerArr[i])
+            } else if (!(serverMapArr[i].contains("ze_Obj") || serverNextMapArr[i].contains("ze_Obj") || serverNominateMapArr[i].contains("ze_Obj"))){
+                hasOBJServerArr[i] = false
+            }
+        }
+    }
+}
 
 fun webforfys():String {
     val token = "swallowtail"

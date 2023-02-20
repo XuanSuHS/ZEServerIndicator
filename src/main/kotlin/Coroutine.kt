@@ -31,6 +31,7 @@ fun ZEDasync() {
                 Thread.sleep(10000)
             }
             Zed.webforZED()
+            Zed.findOBJ()
         }
     }
 }

@@ -1,6 +1,7 @@
 package top.xuansu.mirai.zeServerIndicator
 
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.CommandSenderOnMessage
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.permission.Permission
@@ -14,21 +15,21 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     private var webresponse = ""
 
     @SubCommand("topze")
-    @Description("5e TOPZE社区 服务器列表")
+    @Description("5e TOPZE社区 服务器列表 短命令/topze")
     suspend fun CommandSender.topze() {
         webresponse = webfortopze()
         sendMessage(webresponse)
     }
 
     @SubCommand("5e")
-    @Description("5e TOPZE社区 服务器列表")
+    @Description("5e TOPZE社区 服务器列表 短命令/5e")
     suspend fun CommandSender.fe() {
         webresponse = webfortopze()
         sendMessage(webresponse)
     }
 
     @SubCommand("UB")
-    @Description("UB社区 服务器列表")
+    @Description("UB社区 服务器列表 短命令/ub")
     suspend fun CommandSender.ub() {
         sendMessage("获取服务器信息中，请稍等几秒")
         webresponse = UB.dataOutput()
@@ -36,7 +37,7 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     }
 
     @SubCommand("Zed")
-    @Description("僵尸乐园社区 服务器列表")
+    @Description("僵尸乐园社区 服务器列表 短命令/zed")
     suspend fun CommandSender.zed() {
         webresponse = Zed.dataOutput()
         sendMessage(webresponse)
@@ -101,5 +102,34 @@ class fysCommand(perm: Permission) : SimpleCommand(
     suspend fun CommandSender.handle() {
         val webresponse = webforfys()
         sendMessage(webresponse)
+    }
+}
+
+class openOBJCommand(perm: Permission) : CompositeCommand(
+    owner = Indicator,
+    primaryName = "FindOBJ",
+    parentPermission = perm
+) {
+    @SubCommand("on")
+    @Description("开启本群OBJ提醒")
+    suspend fun CommandSenderOnMessage<*>.on() {
+        FindOBJ.group = fromEvent.subject
+        FindOBJ.FindON = true
+        sendMessage("本群OBJ提醒已开启")
+        UB.firstTimeFindOBJ()
+        Zed.findOBJ()
+    }
+
+    @SubCommand("status")
+    @Description("查看提醒OBJ群列表")
+    suspend fun CommandSender.status() {
+        sendMessage(FindOBJ.group.toString())
+    }
+
+    @SubCommand("off")
+    @Description("关闭本群OBJ提醒")
+    suspend fun CommandSender.off() {
+        FindOBJ.FindON = false
+        sendMessage("本群OBJ提醒已关闭")
     }
 }
