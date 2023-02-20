@@ -279,14 +279,26 @@ object Zed {
     fun findOBJ() {
         if (!FindOBJ.FindON) {return}
         for (i in 1 until 7) {
-            if(!hasOBJServerArr[i] && (serverMapArr[i].contains("ze_Obj") || serverNextMapArr[i].contains("ze_Obj") || serverNominateMapArr[i].contains("ze_Obj"))) {
+            if(!hasOBJServerArr[i] && (serverMapArr[i].contains("ze_Obj")
+                        || serverNextMapArr[i].contains("ze_Obj")
+                        || serverNominateMapArr[i].contains("ze_Obj")
+                        || serverMapArr[i].contains("ze_obj")
+                        || serverNextMapArr[i].contains("ze_obj")
+                        || serverNominateMapArr[i].contains("ze_obj"))
+                ) {
                 hasOBJServerArr[i] = true
                 FindOBJ.sendZEDOBJtoGroup(serverNameArr[i],
                     "地图：" + serverMapArr[i]+ "\n",
                     "下张地图" + serverNextMapArr[i]+ "\n",
                     "预定地图" + serverNominateMapArr[i] + "\n",
                     serverPlayerArr[i])
-            } else if (!(serverMapArr[i].contains("ze_Obj") || serverNextMapArr[i].contains("ze_Obj") || serverNominateMapArr[i].contains("ze_Obj"))){
+            } else if (!(serverMapArr[i].contains("ze_Obj")
+                        || serverNextMapArr[i].contains("ze_Obj")
+                        || serverNominateMapArr[i].contains("ze_Obj")
+                        || serverMapArr[i].contains("ze_obj")
+                        || serverNextMapArr[i].contains("ze_obj")
+                        || serverNominateMapArr[i].contains("ze_obj")
+                    )){
                 hasOBJServerArr[i] = false
             }
         }
