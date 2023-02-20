@@ -93,7 +93,7 @@ class ZedCommand(perm: Permission) : SimpleCommand(
     }
 }
 
-class fysCommand(perm: Permission) : SimpleCommand(
+class FysCommand(perm: Permission) : SimpleCommand(
     owner = Indicator,
     primaryName = "Fy\$",
     parentPermission = perm
@@ -105,7 +105,7 @@ class fysCommand(perm: Permission) : SimpleCommand(
     }
 }
 
-class openOBJCommand(perm: Permission) : CompositeCommand(
+class OpenOBJCommand(perm: Permission) : CompositeCommand(
     owner = Indicator,
     primaryName = "FindOBJ",
     parentPermission = perm

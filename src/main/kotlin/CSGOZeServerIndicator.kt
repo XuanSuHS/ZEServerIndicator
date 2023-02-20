@@ -28,8 +28,8 @@ object Indicator: KotlinPlugin(
         TopzeCommand(zepermission).register()
         FeCommand(zepermission).register()
         ZedCommand(zepermission).register()
-        fysCommand(zepermission).register()
-        openOBJCommand(OBJpermission).register()
+        FysCommand(zepermission).register()
+        OpenOBJCommand(OBJpermission).register()
         logger.info { "ZE Server Indicator 已启动" }
         coroutine()
     }

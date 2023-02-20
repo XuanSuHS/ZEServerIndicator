@@ -100,7 +100,7 @@ object UB {
 
         //寻找OBJ!
         if(!FindOBJ.FindON) {return}
-        if(FindOBJ.FindON && serverNextMapArr[serverNumber] != serverMapArr[serverNumber] && serverNextMapArr[serverNumber].contains("ze_obj")) {
+        if(serverNextMapArr[serverNumber] != serverMapArr[serverNumber] && serverNextMapArr[serverNumber].contains("ze_obj")) {
             FindOBJ.sendOBJtoGroup("UB社区" + serverNameArr[serverNumber],
                 "下张地图：" + serverNextMapArr[serverNumber],
                 serverPlayerArr[serverNumber])
@@ -181,15 +181,16 @@ object UB {
     fun firstTimeFindOBJ() {
         if (!FindOBJ.FindON) {return}
         for (i in 1 until 12) {
-            val serverNumber = i
-            if (serverMapArr[serverNumber].contains("ze_obj")) {
-                FindOBJ.sendOBJtoGroup("UB社区 " + serverNameArr[serverNumber],
-                    "地图：" + serverMapArr[serverNumber],
-                    serverPlayerArr[serverNumber])
-            } else if (serverNextMapArr[serverNumber].contains("ze_obj")) {
-                FindOBJ.sendOBJtoGroup("UB社区 " + serverNameArr[serverNumber],
-                    "下张地图：" + serverNextMapArr[serverNumber],
-                    serverPlayerArr[serverNumber])
+            if (serverMapArr[i].contains("ze_obj")) {
+                FindOBJ.sendOBJtoGroup(
+                    "UB社区 " + serverNameArr[i],
+                    "地图：" + serverMapArr[i],
+                    serverPlayerArr[i])
+            } else if (serverNextMapArr[i].contains("ze_obj")) {
+                FindOBJ.sendOBJtoGroup(
+                    "UB社区 " + serverNameArr[i],
+                    "下张地图：" + serverNextMapArr[i],
+                    serverPlayerArr[i])
             }
         }
     }
@@ -275,7 +276,7 @@ object Zed {
         return response
     }
 
-    var hasOBJServerArr = Array(7) {false}
+    private var hasOBJServerArr = Array(7) {false}
     fun findOBJ() {
         if (!FindOBJ.FindON) {return}
         for (i in 1 until 7) {
