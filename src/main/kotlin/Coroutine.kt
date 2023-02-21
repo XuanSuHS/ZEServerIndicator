@@ -27,7 +27,6 @@ fun UBasync() {
 fun ZEDasync() {
     GlobalScope.launch {
         Zed.webforZED()
-        logger.info("Web For ZED Triggered")
         Zed.findOBJ()
     }
 }
