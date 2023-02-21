@@ -10,3 +10,5 @@
 /ze ub or /ub       显示UB社区服务器信息
 
 /ze zed or /zed     显示僵尸乐园社区服务器信息
+
+/findobj 寻找OBJ服务器
