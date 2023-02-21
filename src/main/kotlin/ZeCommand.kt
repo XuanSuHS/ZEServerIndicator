@@ -15,21 +15,21 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     private var webresponse = ""
 
     @SubCommand("topze")
-    @Description("5e TOPZE社区 服务器列表 短命令/topze")
+    @Description("5e TOPZE社区 服务器列表\n短命令/topze\n")
     suspend fun CommandSender.topze() {
         webresponse = webfortopze()
         sendMessage(webresponse)
     }
 
     @SubCommand("5e")
-    @Description("5e TOPZE社区 服务器列表 短命令/5e")
+    @Description("5e TOPZE社区 服务器列表\n短命令/5e\n")
     suspend fun CommandSender.fe() {
         webresponse = webfortopze()
         sendMessage(webresponse)
     }
 
     @SubCommand("UB")
-    @Description("UB社区 服务器列表 短命令/ub")
+    @Description("UB社区 服务器列表\n短命令/ub\n")
     suspend fun CommandSender.ub() {
         sendMessage("获取服务器信息中，请稍等几秒")
         webresponse = UB.dataOutput()
@@ -37,7 +37,7 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     }
 
     @SubCommand("Zed")
-    @Description("僵尸乐园社区 服务器列表 短命令/zed")
+    @Description("僵尸乐园社区 服务器列表\n短命令/zed\n")
     suspend fun CommandSender.zed() {
         webresponse = Zed.dataOutput()
         sendMessage(webresponse)
