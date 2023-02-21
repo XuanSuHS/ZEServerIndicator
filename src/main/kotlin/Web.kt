@@ -82,18 +82,21 @@ object UB {
 
     //Event "server/client/connected"
     //即玩家连接到服务器
+    //更新人数
     fun clientconnect(serverJSON: JsonObject) {
         serverPlayerArr[serverJSON.get("server").toString().toInt()] += 1
     }
 
     //Event "server/client/disconnect"
     //即玩家断开连接
+    //更新人数
     fun clientdisconnect(serverJSON: JsonObject) {
         serverPlayerArr[serverJSON.get("server").toString().toInt()] -= 1
     }
 
     //Event "server/nextmap/changed"
     //即 RTV 选定下张图
+    //更新下张图
     fun nextMapChange(serverJSON: JsonObject) {
         val serverNumber = serverJSON.get("server").toString().toInt()
         serverNextMapArr[serverNumber] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
@@ -109,8 +112,18 @@ object UB {
 
     //Event "server/map/start"
     //下张图开始
+    //更新地图
     fun mapStart(serverJSON: JsonObject) {
         serverMapArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
+    }
+
+    //Event "server/round_end"
+    //回合结束
+    //更新比分和人数
+    fun roundEnd(serverJSON: JsonObject) {
+        ctscoreArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("ct_score").toString().toInt()
+        tscoreArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("t_score").toString().toInt()
+        serverPlayerArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("player_count").toString().toInt()
     }
 
     fun webforub() {
@@ -132,6 +145,7 @@ object UB {
                 //转数据为json
                 val serverJSON = JsonParser.parseString(text).asJsonObject
                 val event = serverJSON.get("event").toString().replace("\"", "")
+
                 //根据返回Event确定动作
                 if (event == "server/init") {
                     serverInit(serverJSON)}
@@ -147,6 +161,10 @@ object UB {
 
                 if (event == "server/map/start") {
                     mapStart(serverJSON)
+                }
+
+                if (event == "server/round_end") {
+                    roundEnd(serverJSON)
                 }
                 
             }
