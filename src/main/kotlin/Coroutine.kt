@@ -1,6 +1,7 @@
 package top.xuansu.mirai.zeServerIndicator
 
 import kotlinx.coroutines.*
+import top.xuansu.mirai.zeServerIndicator.Indicator.logger
 
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -24,21 +25,23 @@ fun UBasync() {
 
 @OptIn(DelicateCoroutinesApi::class)
 fun ZEDasync() {
-    Zed.webforZED()
     GlobalScope.launch {
-        while (true) {
-            withContext(Dispatchers.IO) {
-                Thread.sleep(10000)
-            }
-            Zed.webforZED()
-            Zed.findOBJ()
-        }
+        Zed.webforZED()
+        logger.info("Web For ZED Triggered")
+        Zed.findOBJ()
     }
 }
-
 
 @OptIn(DelicateCoroutinesApi::class)
 fun coroutine() {
     GlobalScope.launch { UBasync() }
-    GlobalScope.launch { ZEDasync() }
+    GlobalScope.launch {
+        Zed.webforZED()
+        while (true) {
+            withContext(Dispatchers.IO) {
+                Thread.sleep(15000)
+            }
+            ZEDasync()
+        }
+    }
 }
