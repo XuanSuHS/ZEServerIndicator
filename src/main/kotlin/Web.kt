@@ -236,7 +236,7 @@ object Zed {
             //单独处理地图
             //如果没有则不显示这两个字段
             val nextMap = server.get("nextMap").toString().replace("\"", "")
-            serverMapArr[serverNumber] = if (nextMap.contains("暂无")) {
+            serverNextMapArr[serverNumber] = if (nextMap.contains("暂无")) {
                 ""
             } else {
                 "下张地图：$nextMap\n"
@@ -277,33 +277,35 @@ object Zed {
     }
 
     private var hasOBJServerArr = Array(7) {false}
+    private var hasOBJServerMapArr = Array(7) {""}
+    private var hasOBJServerNextMapArr = Array(7) {""}
+    private var hasOBJServerNominateMapArr = Array(7) {""}
     fun findOBJ() {
+        //初始化识别obj正则
+        val objregex = "(?i)^(ze_obj_)".toRegex()
         if (!FindOBJ.FindON) {return}
         for (i in 1 until 7) {
-            if(!hasOBJServerArr[i] && (
-                        serverMapArr[i].contains("ze_Obj")
-                        || serverNextMapArr[i].contains("ze_Obj")
-                        || serverNominateMapArr[i].contains("ze_Obj")
-                        || serverMapArr[i].contains("ze_obj")
-                        || serverNextMapArr[i].contains("ze_obj")
-                        || serverNominateMapArr[i].contains("ze_obj")
-                    )
-                ) {
+            //在服务器现在地图，下张地图和预定地图中寻找obj
+            val ifServerHasOBJ = (objregex.containsMatchIn((serverMapArr[i])) || objregex.containsMatchIn((serverNextMapArr[i])) || objregex.containsMatchIn((serverNominateMapArr[i])))
+
+            //如果标注为OBJ的服务器中地图跟已有的地图不一样（发生在下张图/预定地图也是OBJ的情况）则重新触发obj判定
+            val ifOBJServersHaveSameMaps = (hasOBJServerMapArr[i] == serverMapArr[i] && hasOBJServerNextMapArr[i] == serverNextMapArr[i] && hasOBJServerNominateMapArr[i] == serverNominateMapArr[i])
+            if (hasOBJServerArr[i] && !ifOBJServersHaveSameMaps) {
+                hasOBJServerArr[i] = false
+            }
+
+            //如果该服务器未被标注为obj则标注，已标注且还有OBJ则不触发（防止多次触发）
+            if(!hasOBJServerArr[i] && ifServerHasOBJ) {
                 hasOBJServerArr[i] = true
                 FindOBJ.sendZEDOBJtoGroup(serverNameArr[i],
                     "地图：" + serverMapArr[i]+ "\n",
                     "下张地图" + serverNextMapArr[i]+ "\n",
                     "预定地图" + serverNominateMapArr[i] + "\n",
                     serverPlayerArr[i])
-            } else if (!(
-                        serverMapArr[i].contains("ze_Obj")
-                        || serverNextMapArr[i].contains("ze_Obj")
-                        || serverNominateMapArr[i].contains("ze_Obj")
-                        || serverMapArr[i].contains("ze_obj")
-                        || serverNextMapArr[i].contains("ze_obj")
-                        || serverNominateMapArr[i].contains("ze_obj")
-                    )
-                ){
+                hasOBJServerMapArr[i] = serverMapArr[i]
+                hasOBJServerNextMapArr[i] = serverNextMapArr[i]
+                hasOBJServerNominateMapArr[i] = serverNominateMapArr[i]
+            } else if (!ifServerHasOBJ){
                 hasOBJServerArr[i] = false
             }
         }
