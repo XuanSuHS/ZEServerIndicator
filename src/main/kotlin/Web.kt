@@ -316,9 +316,9 @@ object Zed {
             if(!hasOBJServerArr[i] && ifServerHasOBJ) {
                 hasOBJServerArr[i] = true
                 FindOBJ.sendZEDOBJtoGroup(serverNameArr[i],
-                    "地图：" + serverMapArr[i]+ "\n",
-                    "下张地图" + serverNextMapArr[i]+ "\n",
-                    "预定地图" + serverNominateMapArr[i] + "\n",
+                    "地图：" + serverMapArr[i],
+                    "下张地图" + serverNextMapArr[i],
+                    "预定地图" + serverNominateMapArr[i],
                     serverPlayerArr[i])
                 hasOBJServerMapArr[i] = serverMapArr[i]
                 hasOBJServerNextMapArr[i] = serverNextMapArr[i]

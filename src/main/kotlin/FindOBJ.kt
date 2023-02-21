@@ -20,16 +20,16 @@ object FindOBJ {
     @OptIn(DelicateCoroutinesApi::class)
     fun sendZEDOBJtoGroup(serverName:String, serverMap:String, serverNextMap:String, serverNominateMap:String, serverPlayer:Int) {
         serverNextMaptoMessage = if (serverNextMap.length >= 10) {
-            serverNextMap
+            serverNextMap + "\n"
         } else {
             ""
         }
         serverNominateMaptoMessage = if (serverNominateMap.length >= 10) {
-            serverNominateMap
+            serverNominateMap + "\n"
         } else {
             ""
         }
-        val message = "有OBJ!\n$serverName\n$serverMap$serverNextMaptoMessage$serverNominateMaptoMessage\n人数：$serverPlayer"
+        val message = "有OBJ!\n".plus(serverName + "\n").plus(serverMap + "\n").plus(serverNextMaptoMessage).plus(serverNominateMaptoMessage).plus("人数：$serverPlayer")
         GlobalScope.launch { group.sendMessage(message) }
     }
 }
