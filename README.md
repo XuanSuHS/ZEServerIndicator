@@ -11,3 +11,5 @@
 /ze ub or /ub       显示UB社区服务器信息
 
 /ze zed or /zed     显示僵尸乐园社区服务器信息
+
+/FindOBJ 使用寻找OBJ系列地图功能
