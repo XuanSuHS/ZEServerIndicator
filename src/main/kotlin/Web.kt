@@ -129,7 +129,7 @@ object UB {
     fun webforub() {
         val okHttpClient = OkHttpClient.Builder()
             .build()
-        val baseurl = "ws://app.moeub.com/ws?files=3"
+        val baseurl = "wss://app.moeub.com/ws?files=3"
         val request = Request.Builder()
             .get()
             .url(baseurl)
@@ -173,7 +173,14 @@ object UB {
                 wsfail = true
             }
         })
-        websocket.send("6")
+        for (i in 0 until 30) {
+            if (wsfail) {
+                websocket.cancel()
+                return
+            }
+            Thread.sleep(1000)
+        }
+        websocket.cancel()
     }
 
     fun dataOutput():String {
