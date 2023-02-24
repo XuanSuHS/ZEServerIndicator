@@ -3,25 +3,20 @@ package top.xuansu.mirai.zeServerIndicator
 import kotlinx.coroutines.*
 
 
-@OptIn(DelicateCoroutinesApi::class)
 fun ubAsync() {
-    GlobalScope.launch {UB.webforub()}
+    CoroutineScope(Dispatchers.IO).launch {UB.webforub()}
     while (true) {
         while (UB.wsfail) {
             Thread.sleep(7000)
             UB.wsfail = false
-            GlobalScope.launch {
-                UB.webforub()
-            }
+            CoroutineScope(Dispatchers.IO).launch {UB.webforub()}
         }
         Thread.sleep(2500)
     }
-
 }
 
-@OptIn(DelicateCoroutinesApi::class)
 fun zedAsync() {
-    GlobalScope.launch {
+    CoroutineScope(Dispatchers.IO).launch {
         Zed.webforZED()
         Zed.findOBJ()
     }
@@ -37,6 +32,18 @@ fun coroutine() {
                 Thread.sleep(15000)
             }
             zedAsync()
+        }
+    }
+    var Time = 0
+
+    GlobalScope.launch {
+        while (true) {
+            if (Time >= 20) {
+                System.gc()
+                Time = 0
+            }
+            delay(60000)
+            Time += 1
         }
     }
 }

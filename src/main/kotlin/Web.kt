@@ -205,13 +205,14 @@ object UB {
     //寻找OBJ
     fun firstTimeFindOBJ() {
         if (!FindOBJ.FindON) {return}
+        val objregex = "(?i)^(ze_obj_)".toRegex()
         for (i in 1 until 12) {
-            if (serverMapArr[i].contains("ze_obj")) {
+            if (objregex.containsMatchIn(serverMapArr[i])) {
                 FindOBJ.sendOBJtoGroup(
                     "UB社区 " + serverNameArr[i],
                     "地图：" + serverMapArr[i],
                     serverPlayerArr[i])
-            } else if (serverNextMapArr[i].contains("ze_obj")) {
+            } else if (objregex.containsMatchIn(serverNextMapArr[i])) {
                 FindOBJ.sendOBJtoGroup(
                     "UB社区 " + serverNameArr[i],
                     "下张地图：" + serverNextMapArr[i],
@@ -311,7 +312,7 @@ object Zed {
         if (!FindOBJ.FindON) {return}
         for (i in 1 until 7) {
             //在服务器现在地图，下张地图和预定地图中寻找obj
-            val ifServerHasOBJ = (objregex.containsMatchIn((serverMapArr[i])) || objregex.containsMatchIn((serverNextMapArr[i])) || objregex.containsMatchIn((serverNominateMapArr[i])))
+            val ifServerHasOBJ = (objregex.containsMatchIn(serverMapArr[i])) || objregex.containsMatchIn(serverNextMapArr[i]) || objregex.containsMatchIn(serverNominateMapArr[i])
 
             //如果标注为OBJ的服务器中地图跟已有的地图不一样（发生在下张图/预定地图也是OBJ的情况）则重新触发obj判定
             val ifOBJServersHaveSameMaps = (hasOBJServerMapArr[i] == serverMapArr[i] && hasOBJServerNextMapArr[i] == serverNextMapArr[i] && hasOBJServerNominateMapArr[i] == serverNominateMapArr[i])
