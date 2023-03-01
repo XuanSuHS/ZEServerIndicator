@@ -2,6 +2,9 @@ package top.xuansu.mirai.zeServerIndicator
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -225,12 +228,12 @@ object UB {
 
 object Zed {
 
-    private var serverNameArr = Array(7) {""}
-    private var serverAddressArr = Array(7) {""}
-    private var serverMapArr = Array(7) {""}
-    private var serverNextMapArr = Array(7) {""}
-    private var serverNominateMapArr = Array(7) {""}
-    private var serverPlayerArr = Array(7) {0}
+    private var serverNameArr = Array(10) {""}
+    private var serverAddressArr = Array(10) {""}
+    private var serverMapArr = Array(10) {""}
+    private var serverNextMapArr = Array(10) {""}
+    private var serverNominateMapArr = Array(10) {""}
+    private var serverPlayerArr = Array(10) {0}
     fun webforZED() {
         //构建ServerList 请求
         val okHttpclient = OkHttpClient.Builder().build()
@@ -250,14 +253,19 @@ object Zed {
         for (i in 0 until serverListResponseDataJSON.size()) {
             val server = serverListResponseDataJSON.get(i).asJsonObject
             //跳过ServerList中非 ZE/ZM 服务器
-            if (server.get("serverGroupSortNumber").toString() != "1") {continue}
+            if (server.get("serverGroupSortNumber").toString() != "1") {
+                continue
+            }
             //确定并跳过 ZM 服务器
 
-            if (server.get("serverName").toString().contains("ZM")) {continue}
+            if (server.get("serverName").toString().contains("ZM")) {
+                continue
+            }
             //寻找ServerList中需要的JSON项
             val serverNumber = server.get("serverID").toString().replace("\"", "").toInt().minus(100)
-            serverNameArr[serverNumber] = server.get("serverName").toString().replace("\"","").replace(" 僵尸逃跑","")
-            serverAddressArr[serverNumber] = server.get("ip").toString().plus(":").plus(server.get("port").toString()).replace("\"", "")
+            serverNameArr[serverNumber] = server.get("serverName").toString().replace("\"", "").replace(" 僵尸逃跑", "")
+            serverAddressArr[serverNumber] =
+                server.get("ip").toString().plus(":").plus(server.get("port").toString()).replace("\"", "")
 
             //单独处理地图
             //如果没有则不显示这两个字段
@@ -274,26 +282,30 @@ object Zed {
                 "预定地图：$nominateMap\n"
             }
 
-            //构建 每个服务器的具体数据 请求
-            val serverInfoBaseURL = "http://zombieden.cn/getserverinfo.php?address="
-            val serverURL = serverInfoBaseURL.plus(serverAddressArr[serverNumber])
-            val serverInfoRequest = Request.Builder()
-                .url(serverURL)
-                .get()
-                .build()
-            val serverinforesponse = okHttpclient.newCall(serverInfoRequest).execute()
-            val serverData = serverinforesponse.body!!.string()
-            if (!serverData.contains("HostName")) {return}
-            val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
-            //寻找服务器详细数据中需要的项
-            serverPlayerArr[serverNumber] = serverDataJSON.get("Players").toString().toInt()
-            serverMapArr[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
+            CoroutineScope(Dispatchers.IO).launch {
+                //构建 每个服务器的具体数据 请求
+                val serverInfoBaseURL = "http://zombieden.cn/getserverinfo.php?address="
+                val serverURL = serverInfoBaseURL.plus(serverAddressArr[serverNumber])
+                val serverInfoRequest = Request.Builder()
+                    .url(serverURL)
+                    .get()
+                    .build()
+                val serverinforesponse = okHttpclient.newCall(serverInfoRequest).execute()
+                val serverData = serverinforesponse.body!!.string()
+                if (!serverData.contains("HostName")) {
+                    return@launch
+                }
+                val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
+                //寻找服务器详细数据中需要的项
+                serverPlayerArr[serverNumber] = serverDataJSON.get("Players").toString().toInt()
+                serverMapArr[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
+            }
         }
     }
 
     fun dataOutput():String {
         var response = "   [僵尸乐园 ZE 服务器数据]\n"
-        for ( i in 1 until 7) {
+        for ( i in 1 until 8) {
             response += "\n".plus(serverNameArr[i]).plus("  ").plus(serverPlayerArr[i].toString() + "/64\n")
                 .plus("地图："+ serverMapArr[i] + "\n")
                 .plus("地址：" + serverAddressArr[i] + "\n")
@@ -302,10 +314,10 @@ object Zed {
         return response
     }
 
-    private var hasOBJServerArr = Array(7) {false}
-    private var hasOBJServerMapArr = Array(7) {""}
-    private var hasOBJServerNextMapArr = Array(7) {""}
-    private var hasOBJServerNominateMapArr = Array(7) {""}
+    private var hasOBJServerArr = Array(10) {false}
+    private var hasOBJServerMapArr = Array(10) {""}
+    private var hasOBJServerNextMapArr = Array(10) {""}
+    private var hasOBJServerNominateMapArr = Array(10) {""}
     fun findOBJ() {
         //初始化识别obj正则
         val objregex = "(?i)^(ze_obj_)".toRegex()
