@@ -132,7 +132,7 @@ object UB {
     fun webforub() {
         val okHttpClient = OkHttpClient.Builder()
             .build()
-        val baseurl = "wss://app.moeub.com/ws?files=3"
+        val baseurl = "ws://app.moeub.com/ws?files=3"
         val request = Request.Builder()
             .get()
             .url(baseurl)
