@@ -31,7 +31,6 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     @SubCommand("UB")
     @Description("UB社区 服务器列表\n短命令/ub\n")
     suspend fun CommandSender.ub() {
-        sendMessage("获取服务器信息中，请稍等几秒")
         webresponse = UB.dataOutput()
         sendMessage(webresponse)
     }

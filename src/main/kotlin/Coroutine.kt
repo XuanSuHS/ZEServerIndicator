@@ -34,16 +34,16 @@ fun coroutine() {
             zedAsync()
         }
     }
-    var Time = 0
+    var time = 0
 
     GlobalScope.launch {
         while (true) {
-            if (Time >= 20) {
+            if (time >= 20) {
                 System.gc()
-                Time = 0
+                time = 0
             }
             delay(60000)
-            Time += 1
+            time += 1
         }
     }
 }

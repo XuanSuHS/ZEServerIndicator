@@ -7,6 +7,7 @@ import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.id
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
 import net.mamoe.mirai.utils.info
 
 object Indicator: KotlinPlugin(
@@ -30,6 +31,7 @@ object Indicator: KotlinPlugin(
         ZedCommand(zepermission).register()
         FysCommand(zepermission).register()
         OpenOBJCommand(OBJpermission).register()
+        reloadPluginConfig(Config)
         logger.info { "ZE Server Indicator 已启动" }
         coroutine()
     }

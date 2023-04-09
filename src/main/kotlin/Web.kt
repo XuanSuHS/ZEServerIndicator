@@ -10,8 +10,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
 fun webfortopze(): String {
-    //TODO:token从文件传入
-    val token = "fec9d45f7416256443b5e051c200fc1d"
+    val token = Config.topzeToken
     val baseurl = "https://api-clan.rushbgogogo.com/api/v1/systemApp/gameServerRoomsList?mode=ze"
     //构建http请求
     val okHttpclient = OkHttpClient.Builder().build()
