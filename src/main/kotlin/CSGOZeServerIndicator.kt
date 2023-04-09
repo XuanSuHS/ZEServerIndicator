@@ -26,7 +26,6 @@ object Indicator: KotlinPlugin(
         OBJpermission = PermissionService.INSTANCE.register(PermissionId(id,"OBJ"),"OBJ检测使用权限")
         ZeCommand(zepermission).register()
         UbCommand(zepermission).register()
-        TopzeCommand(zepermission).register()
         FeCommand(zepermission).register()
         ZedCommand(zepermission).register()
         FysCommand(zepermission).register()

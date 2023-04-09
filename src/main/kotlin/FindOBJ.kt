@@ -8,8 +8,8 @@ import net.mamoe.mirai.contact.Contact
 object FindOBJ {
     lateinit var group: Contact
     var FindON = false
-    var serverNextMaptoMessage = ""
-    var serverNominateMaptoMessage = ""
+    private var serverNextMaptoMessage = ""
+    private var serverNominateMaptoMessage = ""
 
     @OptIn(DelicateCoroutinesApi::class)
     fun sendOBJtoGroup(serverName:String,serverMap:String,serverPlayer:Int) {

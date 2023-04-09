@@ -14,13 +14,6 @@ class ZeCommand(perm: Permission) : CompositeCommand(
 ) {
     private var webresponse = ""
 
-    @SubCommand("topze")
-    @Description("5e TOPZE社区 服务器列表\n短命令/topze\n")
-    suspend fun CommandSender.topze() {
-        webresponse = webfortopze()
-        sendMessage(webresponse)
-    }
-
     @SubCommand("5e")
     @Description("5e TOPZE社区 服务器列表\n短命令/5e\n")
     suspend fun CommandSender.fe() {
@@ -52,18 +45,6 @@ class UbCommand(perm: Permission) : SimpleCommand(
     @Handler
     suspend fun CommandSender.handle() {
         val webresponse = UB.dataOutput()
-        sendMessage(webresponse)
-    }
-}
-
-class TopzeCommand(perm: Permission) : SimpleCommand(
-    owner = Indicator,
-    primaryName = "topze",
-    parentPermission = perm
-) {
-    @Handler
-    suspend fun CommandSender.handle() {
-        val webresponse = webfortopze()
         sendMessage(webresponse)
     }
 }
