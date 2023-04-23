@@ -22,10 +22,10 @@ fun zedAsync() {
     }
 }
 
-@OptIn(DelicateCoroutinesApi::class)
+
 fun coroutine() {
-    GlobalScope.launch { ubAsync() }
-    GlobalScope.launch {
+    CoroutineScope(Dispatchers.IO).launch { ubAsync() }
+    CoroutineScope(Dispatchers.IO).launch {
         Zed.webforZED()
         while (true) {
             withContext(Dispatchers.IO) {
@@ -36,7 +36,7 @@ fun coroutine() {
     }
     var time = 0
 
-    GlobalScope.launch {
+    CoroutineScope(Dispatchers.Default).launch {
         while (true) {
             if (time >= 20) {
                 System.gc()
