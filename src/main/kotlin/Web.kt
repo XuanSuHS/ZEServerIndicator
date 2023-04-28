@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import top.xuansu.mirai.zeServerIndicator.Indicator.save
 
 object TopZE {
 
@@ -250,6 +251,7 @@ object UB {
             val mapResponseData = mapResponseBody.get("data").asJsonObject.get("data").asJsonArray
             val mapChi = mapResponseData.get(0).asJsonObject.get("label").toString().replace("\"", "")
             Data.UBMapChi[map] = mapChi
+            Data.save()
             mapChi
         }
     }
@@ -305,6 +307,7 @@ object UB {
 
 object Zed {
 
+    //初始化服务器信息参数
     private var serverNameArr = Array(10) { "" }
     private var serverAddressArr = Array(10) { "" }
     private var serverMapArr = Array(10) { "" }
@@ -326,17 +329,17 @@ object Zed {
         val serverListResponse = okHttpclient.newCall(serverListRequest).execute()
         //变换ServerList 返回数据
         val serverListResponseData = serverListResponse.body!!.string()
-
         val serverListResponseDataJSON = JsonParser.parseString(serverListResponseData).asJsonArray
-        //
+
+        //获取变换后JSON内信息
         for (i in 0 until serverListResponseDataJSON.size()) {
             val server = serverListResponseDataJSON.get(i).asJsonObject
+
             //跳过ServerList中非 ZE/ZM 服务器
             if (server.get("serverGroupSortNumber").toString() != "1") {
                 continue
             }
             //确定并跳过 ZM 服务器
-
             if (server.get("serverName").toString().contains("ZM")) {
                 continue
             }
