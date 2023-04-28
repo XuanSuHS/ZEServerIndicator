@@ -1,5 +1,6 @@
 package top.xuansu.mirai.zeServerIndicator
 
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionId
@@ -19,23 +20,27 @@ object Indicator: KotlinPlugin(
         author("XuanSu")
     }
 ) {
-    private lateinit var zepermission: Permission
-    private lateinit var OBJpermission: Permission
+    private lateinit var ZEPermission: Permission
+    private lateinit var OBJPermission: Permission
     override fun onEnable() {
-        zepermission = PermissionService.INSTANCE.register(PermissionId(id,"ze"),"命令使用权限")
-        OBJpermission = PermissionService.INSTANCE.register(PermissionId(id,"OBJ"),"OBJ检测使用权限")
-        ZeCommand(zepermission).register()
-        UbCommand(zepermission).register()
-        FeCommand(zepermission).register()
-        ZedCommand(zepermission).register()
-        FysCommand(zepermission).register()
-        OpenOBJCommand(OBJpermission).register()
+        ZEPermission = PermissionService.INSTANCE.register(PermissionId(id,"ze"),"命令使用权限")
+        OBJPermission = PermissionService.INSTANCE.register(PermissionId(id,"OBJ"),"OBJ检测使用权限")
+
+        ZeCommand(ZEPermission).register()
+        UbCommand(ZEPermission).register()
+        FeCommand(ZEPermission).register()
+        ZedCommand(ZEPermission).register()
+        FysCommand(ZEPermission).register()
+        FindOBJCommand(OBJPermission).register()
+
         reloadPluginConfig(Config)
+
         logger.info { "ZE Server Indicator 已启动" }
-        coroutine()
+        coroutineOnEnable()
     }
 
     override fun onDisable() {
+        CommandManager.INSTANCE.unregisterAllCommands(Indicator)
         logger.info {"ZE Server Indicator 已关闭"}
     }
 }

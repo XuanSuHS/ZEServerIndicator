@@ -12,27 +12,27 @@ class ZeCommand(perm: Permission) : CompositeCommand(
     primaryName = "ze",
     parentPermission = perm
 ) {
-    private var webresponse = ""
+    private var webResponse = ""
 
     @SubCommand("5e")
     @Description("5e TOPZE社区 服务器列表\n短命令/5e\n")
     suspend fun CommandSender.fe() {
-        webresponse = webfortopze()
-        sendMessage(webresponse)
+        webResponse = webForTopZE()
+        sendMessage(webResponse)
     }
 
     @SubCommand("UB")
     @Description("UB社区 服务器列表\n短命令/ub\n")
     suspend fun CommandSender.ub() {
-        webresponse = UB.dataOutput()
-        sendMessage(webresponse)
+        webResponse = UB.dataOutput()
+        sendMessage(webResponse)
     }
 
     @SubCommand("Zed")
     @Description("僵尸乐园社区 服务器列表\n短命令/zed\n")
     suspend fun CommandSender.zed() {
-        webresponse = Zed.dataOutput()
-        sendMessage(webresponse)
+        webResponse = Zed.dataOutput()
+        sendMessage(webResponse)
     }
 }
 
@@ -44,8 +44,8 @@ class UbCommand(perm: Permission) : SimpleCommand(
 
     @Handler
     suspend fun CommandSender.handle() {
-        val webresponse = UB.dataOutput()
-        sendMessage(webresponse)
+        val webResponse = UB.dataOutput()
+        sendMessage(webResponse)
     }
 }
 
@@ -56,8 +56,8 @@ class FeCommand(perm: Permission) : SimpleCommand(
 ) {
     @Handler
     suspend fun CommandSender.handle() {
-        val webresponse = webfortopze()
-        sendMessage(webresponse)
+        val webResponse = webForTopZE()
+        sendMessage(webResponse)
     }
 }
 
@@ -68,8 +68,8 @@ class ZedCommand(perm: Permission) : SimpleCommand(
 ) {
     @Handler
     suspend fun CommandSender.handle() {
-        val webresponse = Zed.dataOutput()
-        sendMessage(webresponse)
+        val webResponse = Zed.dataOutput()
+        sendMessage(webResponse)
     }
 }
 
@@ -80,12 +80,12 @@ class FysCommand(perm: Permission) : SimpleCommand(
 ) {
     @Handler
     suspend fun CommandSender.handle() {
-        val webresponse = webforfys()
-        sendMessage(webresponse)
+        val webResponse = webforfys()
+        sendMessage(webResponse)
     }
 }
 
-class OpenOBJCommand(perm: Permission) : CompositeCommand(
+class FindOBJCommand(perm: Permission) : CompositeCommand(
     owner = Indicator,
     primaryName = "FindOBJ",
     parentPermission = perm

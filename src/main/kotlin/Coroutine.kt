@@ -6,9 +6,9 @@ import kotlinx.coroutines.*
 fun ubAsync() {
     CoroutineScope(Dispatchers.IO).launch {UB.webforub()}
     while (true) {
-        while (UB.wsfail) {
+        while (UB.isWebsocketFailed) {
             Thread.sleep(7000)
-            UB.wsfail = false
+            UB.isWebsocketFailed = false
             CoroutineScope(Dispatchers.IO).launch {UB.webforub()}
         }
         Thread.sleep(2500)
@@ -23,7 +23,9 @@ fun zedAsync() {
 }
 
 
-fun coroutine() {
+fun coroutineOnEnable() {
+
+    //定时刷新UB，ZED服务器数据
     CoroutineScope(Dispatchers.IO).launch { ubAsync() }
     CoroutineScope(Dispatchers.IO).launch {
         Zed.webforZED()
@@ -36,6 +38,7 @@ fun coroutine() {
     }
     var time = 0
 
+    //定时触发Java GC
     CoroutineScope(Dispatchers.Default).launch {
         while (true) {
             if (time >= 20) {

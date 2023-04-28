@@ -11,7 +11,7 @@ object FindOBJ {
     private var serverNextMaptoMessage = ""
     private var serverNominateMaptoMessage = ""
 
-    fun sendOBJtoGroup(serverName:String,serverMap:String,serverPlayer:Int) {
+    fun sendUBOBJtoGroup(serverName:String, serverMap:String, serverPlayer:Int) {
         val message = "有OBJ!\n$serverName\n$serverMap\n人数：$serverPlayer"
         CoroutineScope(Dispatchers.Default).launch { group.sendMessage(message) }
     }

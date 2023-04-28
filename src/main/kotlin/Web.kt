@@ -9,8 +9,8 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
-fun webfortopze(): String {
-    val token = Config.topzeToken
+fun webForTopZE(): String {
+    val token = Config.topZEToken
     val baseurl = "https://api-clan.rushbgogogo.com/api/v1/systemApp/gameServerRoomsList?mode=ze"
     //构建http请求
     val okHttpclient = OkHttpClient.Builder().build()
@@ -41,13 +41,13 @@ object UB {
     private var serverNameArr = Array(12) { "" }
 
 
-    private var tscoreArr = Array(12) { 0 }
-    private var ctscoreArr = Array(12) { 0 }
+    private var tScoreArr = Array(12) { 0 }
+    private var ctScoreArr = Array(12) { 0 }
     private var serverMapArr = Array(12) { "" }
     private var serverNextMapArr = Array(12) { "" }
     private var serverPlayerArr = Array(12) { 0 }
 
-    var wsfail = false
+    var isWebsocketFailed = false
 
     //Event "server/init"
     //即客户端初始化
@@ -71,8 +71,8 @@ object UB {
         serverNameArr[serverNumber] = serverData.get("name").toString().replace("\"", "").replace(" Q群 749180050", "").replace("UB社区 ","")
 
         //将比分写入数组
-        tscoreArr[serverNumber] = serverData.get("t_score").toString().toInt()
-        ctscoreArr[serverNumber] = serverData.get("ct_score").toString().toInt()
+        tScoreArr[serverNumber] = serverData.get("t_score").toString().toInt()
+        ctScoreArr[serverNumber] = serverData.get("ct_score").toString().toInt()
 
         //将地图写入数组
         serverMapArr[serverNumber] = serverData.get("map").asJsonObject.get("name").toString().replace("\"", "")
@@ -106,7 +106,7 @@ object UB {
         //寻找OBJ!
         if(!FindOBJ.FindON) {return}
         if(serverNextMapArr[serverNumber] != serverMapArr[serverNumber] && serverNextMapArr[serverNumber].contains("ze_obj")) {
-            FindOBJ.sendOBJtoGroup("UB社区" + serverNameArr[serverNumber],
+            FindOBJ.sendUBOBJtoGroup("UB社区" + serverNameArr[serverNumber],
                 "下张地图：" + serverNextMapArr[serverNumber],
                 serverPlayerArr[serverNumber])
         }
@@ -123,8 +123,8 @@ object UB {
     //回合结束
     //更新比分和人数
     fun roundEnd(serverJSON: JsonObject) {
-        ctscoreArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("ct_score").toString().toInt()
-        tscoreArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("t_score").toString().toInt()
+        ctScoreArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("ct_score").toString().toInt()
+        tScoreArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("t_score").toString().toInt()
         serverPlayerArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("player_count").toString().toInt()
     }
 
@@ -172,11 +172,11 @@ object UB {
             }
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 super.onFailure(webSocket, t, response)
-                wsfail = true
+                isWebsocketFailed = true
             }
         })
         for (i in 0 until 30) {
-            if (wsfail) {
+            if (isWebsocketFailed) {
                 websocket.cancel()
                 return
             }
@@ -198,7 +198,7 @@ object UB {
 
             response += "\n------------------------------\n".plus("【" + serverNameArr[i] + "】").plus(" ").plus(serverPlayerArr[i]).plus("/64\n")
                 .plus("地图："+ serverMapArr[i] + "\n")
-                .plus("比分：" + ctscoreArr[i] + "/" + tscoreArr[i])
+                .plus("比分：" + ctScoreArr[i] + "/" + tScoreArr[i])
                 .plus(serverNextMap)
         }
         return response
@@ -210,12 +210,12 @@ object UB {
         val objregex = "(?i)^(ze_obj_)".toRegex()
         for (i in 1 until 12) {
             if (objregex.containsMatchIn(serverMapArr[i])) {
-                FindOBJ.sendOBJtoGroup(
+                FindOBJ.sendUBOBJtoGroup(
                     "UB社区 " + serverNameArr[i],
                     "地图：" + serverMapArr[i],
                     serverPlayerArr[i])
             } else if (objregex.containsMatchIn(serverNextMapArr[i])) {
-                FindOBJ.sendOBJtoGroup(
+                FindOBJ.sendUBOBJtoGroup(
                     "UB社区 " + serverNameArr[i],
                     "下张地图：" + serverNextMapArr[i],
                     serverPlayerArr[i])
