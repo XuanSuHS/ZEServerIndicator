@@ -81,7 +81,7 @@ class FysCommand(perm: Permission) : SimpleCommand(
 ) {
     @Handler
     suspend fun CommandSender.handle() {
-        val webResponse = webforfys()
+        val webResponse = webForFys()
         sendMessage(webResponse)
     }
 }

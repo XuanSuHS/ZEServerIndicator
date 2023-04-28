@@ -161,7 +161,7 @@ object UB {
         serverPlayerArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("player_count").toString().toInt()
     }
 
-    fun webforub() {
+    fun webForUB() {
         val okHttpClient = OkHttpClient.Builder()
             .build()
         val baseurl = "ws://app.moeub.com/ws?files=3"
@@ -266,7 +266,7 @@ object Zed {
     private var serverNextMapArr = Array(10) {""}
     private var serverNominateMapArr = Array(10) {""}
     private var serverPlayerArr = Array(10) {0}
-    fun webforZED() {
+    fun webForZED() {
         //构建ServerList 请求
         val okHttpclient = OkHttpClient.Builder().build()
         val serverListBaseURL = "http://zedbox.cn:5002/api/version/GetServerList"
@@ -382,7 +382,7 @@ object Zed {
     }
 }
 
-fun webforfys():String {
+fun webForFys():String {
     val token = "swallowtail"
     val baseurl = "https://fyscs.com/silverwing/system/dashboard"
     //构建http请求

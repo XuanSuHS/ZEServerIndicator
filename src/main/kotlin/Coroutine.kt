@@ -4,12 +4,12 @@ import kotlinx.coroutines.*
 
 
 fun ubAsync() {
-    CoroutineScope(Dispatchers.IO).launch {UB.webforub()}
+    CoroutineScope(Dispatchers.IO).launch {UB.webForUB()}
     while (true) {
         while (UB.isWebsocketFailed) {
             Thread.sleep(7000)
             UB.isWebsocketFailed = false
-            CoroutineScope(Dispatchers.IO).launch {UB.webforub()}
+            CoroutineScope(Dispatchers.IO).launch {UB.webForUB()}
         }
         Thread.sleep(2500)
     }
@@ -17,7 +17,7 @@ fun ubAsync() {
 
 fun zedAsync() {
     CoroutineScope(Dispatchers.IO).launch {
-        Zed.webforZED()
+        Zed.webForZED()
         Zed.findOBJ()
     }
 }
@@ -28,7 +28,7 @@ fun coroutineOnEnable() {
     //定时刷新UB，ZED服务器数据
     CoroutineScope(Dispatchers.IO).launch { ubAsync() }
     CoroutineScope(Dispatchers.IO).launch {
-        Zed.webforZED()
+        Zed.webForZED()
         while (true) {
             withContext(Dispatchers.IO) {
                 Thread.sleep(15000)
