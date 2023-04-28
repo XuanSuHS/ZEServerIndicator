@@ -264,14 +264,14 @@ object UB {
             var serverNextMap = ""
             if (!(serverNextMapArr[i] == serverMapArr[i] || serverNextMapArr[i].length <= 3))  {
                 val serverNextMapChi = getMapChi(serverNextMapArr[i])
-                serverNextMap = "\n下张地图：" + serverNextMapArr[i] + "/$serverNextMapChi"
+                serverNextMap = "\n下张地图：" + serverNextMapArr[i] + "\n地图译名：$serverNextMapChi"
             }
 
             val serverMapChi = getMapChi(serverMapArr[i])
 
             response += "\n------------------------------\n".plus("【" + serverNameArr[i] + "】").plus(" ")
                 .plus(serverPlayerArr[i]).plus("/64\n")
-                .plus("地图：" + serverMapArr[i] + "/$serverMapChi" + "\n")
+                .plus("地图：" + serverMapArr[i] + "\n译名：$serverMapChi" + "\n")
                 .plus("比分：" + ctScoreArr[i] + "/" + tScoreArr[i])
                 .plus(serverNextMap)
         }
@@ -389,7 +389,7 @@ object Zed {
         for (i in 1 until 8) {
             response += "\n".plus(serverNameArr[i]).plus("  ")
                 .plus(serverPlayerArr[i].toString() + "/" + serverMaxPlayerArr[i] + "\n")
-                .plus("地图：" + serverMapArr[i] + "/" + serverMapChiArr[i] + "\n")
+                .plus("地图：" + serverMapArr[i] + "\n译名：" + serverMapChiArr[i] + "\n")
                 .plus("地址：" + serverAddressArr[i] + "\n")
                 .plus(serverNextMapArr[i])
         }
