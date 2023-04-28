@@ -29,12 +29,13 @@ object TopZE {
         val responseDataJSON = JsonParser.parseString(responseData).asJsonObject.getAsJsonArray("message")
         var serverString = "   [5e ZE 服务器数据]"
         //遍历数组中每一项中所需的数据
-        for (i in 0 until responseDataJSON.size()){
-            val server = responseDataJSON.get(i)
-            val name = server.asJsonObject.get("Name").toString().replace("\"", "")
-            val playerCount = server.asJsonObject.get("PlayerCount").toString().replace("\"", "")
-            val gameMap = server.asJsonObject.get("GameMap").toString().replace("\"", "")
-            serverString = serverString.plus("\n\n$name  ").plus(playerCount+"人\n").plus(gameMap + "\n")
+        for (i in 0 until responseDataJSON.size()) {
+            val server = responseDataJSON.get(i).asJsonObject
+            val name = server.get("Name").toString().replace("\"", "")
+            val playerCount = server.get("PlayerCount").toString().replace("\"", "")
+            val maxPlayer = server.get("MaxPlayer").toString().replace("\"", "")
+            val gameMap = server.get("GameMap").toString().replace("\"", "")
+            serverString = serverString.plus("\n\n$name  ").plus("$playerCount/$maxPlayer\n").plus("地图：$gameMap\n")
 
             if (mapData.has(gameMap)) {
                 val mapInfo = mapData.get(gameMap).asJsonObject
@@ -43,8 +44,7 @@ object TopZE {
                 val mapTag = mapInfo.get("tag").toString().replace("\"", "")
                 serverString = serverString
                     .plus("译名：$mapCNName\n")
-                    .plus("难度：$mapDifficulty\n")
-                    .plus("Tag：$mapTag \n")
+                    .plus("信息：$mapDifficulty $mapTag")
             }
         }
         return serverString
@@ -81,27 +81,34 @@ object UB {
     private var serverPlayerArr = Array(12) { 0 }
 
     var isWebsocketFailed = false
+    private val okHttpClient = OkHttpClient.Builder()
+        .build()
 
     //Event "server/init"
     //即客户端初始化
-    fun serverInit(serverJSON:JsonObject) {
+    fun serverInit(serverJSON: JsonObject) {
 
         //提取JSON中服务器数据
         val serverData = serverJSON.get("data").asJsonObject
 
         //剔除非 CSGO 服务器信息
         val serverappid = serverData.get("appid").toString().toInt()
-        if (serverappid != 730) {return}
+        if (serverappid != 730) {
+            return
+        }
 
         // 剔除非 ZE 模式信息
         val serverMode = serverData.get("mode").toString().toInt()
-        if (serverMode != 1) {return}
+        if (serverMode != 1) {
+            return
+        }
 
         //查询是哪个服务器
         val serverNumber = serverData.get("id").toString().toInt()
 
         //将服务器名写入数组
-        serverNameArr[serverNumber] = serverData.get("name").toString().replace("\"", "").replace(" Q群 749180050", "").replace("UB社区 ","")
+        serverNameArr[serverNumber] =
+            serverData.get("name").toString().replace("\"", "").replace(" Q群 749180050", "").replace("UB社区 ", "")
 
         //将比分写入数组
         tScoreArr[serverNumber] = serverData.get("t_score").toString().toInt()
@@ -118,14 +125,14 @@ object UB {
     //Event "server/client/connected"
     //即玩家连接到服务器
     //更新人数
-    fun clientconnect(serverJSON: JsonObject) {
+    fun clientConnect(serverJSON: JsonObject) {
         serverPlayerArr[serverJSON.get("server").toString().toInt()] += 1
     }
 
     //Event "server/client/disconnect"
     //即玩家断开连接
     //更新人数
-    fun clientdisconnect(serverJSON: JsonObject) {
+    fun clientDisconnect(serverJSON: JsonObject) {
         serverPlayerArr[serverJSON.get("server").toString().toInt()] -= 1
     }
 
@@ -137,11 +144,15 @@ object UB {
         serverNextMapArr[serverNumber] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
 
         //寻找OBJ!
-        if(!FindOBJ.FindON) {return}
-        if(serverNextMapArr[serverNumber] != serverMapArr[serverNumber] && serverNextMapArr[serverNumber].contains("ze_obj")) {
-            FindOBJ.sendUBOBJtoGroup("UB社区" + serverNameArr[serverNumber],
+        if (!FindOBJ.FindON) {
+            return
+        }
+        if (serverNextMapArr[serverNumber] != serverMapArr[serverNumber] && serverNextMapArr[serverNumber].contains("ze_obj")) {
+            FindOBJ.sendUBOBJtoGroup(
+                "UB社区" + serverNameArr[serverNumber],
                 "下张地图：" + serverNextMapArr[serverNumber],
-                serverPlayerArr[serverNumber])
+                serverPlayerArr[serverNumber]
+            )
         }
     }
 
@@ -149,29 +160,32 @@ object UB {
     //下张图开始
     //更新地图
     fun mapStart(serverJSON: JsonObject) {
-        serverMapArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
+        serverMapArr[serverJSON.get("server").toString().toInt()] =
+            serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
     }
 
     //Event "server/round_end"
     //回合结束
     //更新比分和人数
     fun roundEnd(serverJSON: JsonObject) {
-        ctScoreArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("ct_score").toString().toInt()
-        tScoreArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("t_score").toString().toInt()
-        serverPlayerArr[serverJSON.get("server").toString().toInt()] = serverJSON.get("data").asJsonObject.get("player_count").toString().toInt()
+        ctScoreArr[serverJSON.get("server").toString().toInt()] =
+            serverJSON.get("data").asJsonObject.get("ct_score").toString().toInt()
+        tScoreArr[serverJSON.get("server").toString().toInt()] =
+            serverJSON.get("data").asJsonObject.get("t_score").toString().toInt()
+        serverPlayerArr[serverJSON.get("server").toString().toInt()] =
+            serverJSON.get("data").asJsonObject.get("player_count").toString().toInt()
     }
 
     fun webForUB() {
-        val okHttpClient = OkHttpClient.Builder()
-            .build()
+
         val baseurl = "ws://app.moeub.com/ws?files=3"
-        val request = Request.Builder()
+        val mainRequest = Request.Builder()
             .get()
             .url(baseurl)
-            .header("User-Agent","Moeub Client")
+            .header("User-Agent", "Moeub Client")
             .build()
         //构建websocket客户端
-        val websocket = okHttpClient.newWebSocket(request, object : WebSocketListener(){
+        val websocket = okHttpClient.newWebSocket(mainRequest, object : WebSocketListener() {
 
             //在websocket连接收到返回信息时执行
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -183,16 +197,20 @@ object UB {
 
                 //根据返回Event确定动作
                 if (event == "server/init") {
-                    serverInit(serverJSON)}
+                    serverInit(serverJSON)
+                }
 
                 if (event == "server/client/connected") {
-                    clientconnect(serverJSON)}
+                    clientConnect(serverJSON)
+                }
 
                 if (event == "server/client/disconnect") {
-                    clientdisconnect(serverJSON)}
+                    clientDisconnect(serverJSON)
+                }
 
                 if (event == "server/nextmap/changed") {
-                    nextMapChange(serverJSON)}
+                    nextMapChange(serverJSON)
+                }
 
                 if (event == "server/map/start") {
                     mapStart(serverJSON)
@@ -201,8 +219,9 @@ object UB {
                 if (event == "server/round_end") {
                     roundEnd(serverJSON)
                 }
-                
+
             }
+
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 super.onFailure(webSocket, t, response)
                 isWebsocketFailed = true
@@ -218,19 +237,41 @@ object UB {
         websocket.cancel()
     }
 
-    fun dataOutput():String {
+    private fun getMapChi(map: String): String? {
+        return if (Data.UBMapChi[map] != null ) {
+            Data.UBMapChi[map]
+        } else {
+            val mapRequest = Request.Builder()
+                .url("https://game.moeub.cn/api/maps?pageSize=50&name=$map")
+                .get()
+                .build()
+            val mapResponse = okHttpClient.newCall(mapRequest).execute()
+            val mapResponseBody = JsonParser.parseString(mapResponse.body!!.string()).asJsonObject
+            val mapResponseData = mapResponseBody.get("data").asJsonObject.get("data").asJsonArray
+            val mapChi = mapResponseData.get(0).asJsonObject.get("label").toString().replace("\"", "")
+            Data.UBMapChi[map] = mapChi
+            mapChi
+        }
+    }
+
+    fun dataOutput(): String {
         var response = "   [UB 社区 ZE 服务器数据]"
         for (i in 1 until 12) {
             //判定有没有定下张地图
-            if (serverNameArr[i] == "") {continue}
-            val serverNextMap = if (serverNextMapArr[i] == serverMapArr[i] || serverNextMapArr[i].length <= 3) {
-                ""
-            } else {
-                "\n下张地图：" + serverNextMapArr[i]
+            if (serverNameArr[i] == "") {
+                continue
+            }
+            var serverNextMap = ""
+            if (!(serverNextMapArr[i] == serverMapArr[i] || serverNextMapArr[i].length <= 3))  {
+                val serverNextMapChi = getMapChi(serverNextMapArr[i])
+                serverNextMap = "\n下张地图：" + serverNextMapArr[i] + "/$serverNextMapChi"
             }
 
-            response += "\n------------------------------\n".plus("【" + serverNameArr[i] + "】").plus(" ").plus(serverPlayerArr[i]).plus("/64\n")
-                .plus("地图："+ serverMapArr[i] + "\n")
+            val serverMapChi = getMapChi(serverMapArr[i])
+
+            response += "\n------------------------------\n".plus("【" + serverNameArr[i] + "】").plus(" ")
+                .plus(serverPlayerArr[i]).plus("/64\n")
+                .plus("地图：" + serverMapArr[i] + "/$serverMapChi" + "\n")
                 .plus("比分：" + ctScoreArr[i] + "/" + tScoreArr[i])
                 .plus(serverNextMap)
         }
@@ -239,19 +280,23 @@ object UB {
 
     //寻找OBJ
     fun firstTimeFindOBJ() {
-        if (!FindOBJ.FindON) {return}
+        if (!FindOBJ.FindON) {
+            return
+        }
         val objregex = "(?i)^(ze_obj_)".toRegex()
         for (i in 1 until 12) {
             if (objregex.containsMatchIn(serverMapArr[i])) {
                 FindOBJ.sendUBOBJtoGroup(
                     "UB社区 " + serverNameArr[i],
                     "地图：" + serverMapArr[i],
-                    serverPlayerArr[i])
+                    serverPlayerArr[i]
+                )
             } else if (objregex.containsMatchIn(serverNextMapArr[i])) {
                 FindOBJ.sendUBOBJtoGroup(
                     "UB社区 " + serverNameArr[i],
                     "下张地图：" + serverNextMapArr[i],
-                    serverPlayerArr[i])
+                    serverPlayerArr[i]
+                )
             }
         }
     }
@@ -260,12 +305,14 @@ object UB {
 
 object Zed {
 
-    private var serverNameArr = Array(10) {""}
-    private var serverAddressArr = Array(10) {""}
-    private var serverMapArr = Array(10) {""}
-    private var serverNextMapArr = Array(10) {""}
-    private var serverNominateMapArr = Array(10) {""}
-    private var serverPlayerArr = Array(10) {0}
+    private var serverNameArr = Array(10) { "" }
+    private var serverAddressArr = Array(10) { "" }
+    private var serverMapArr = Array(10) { "" }
+    private var serverMapChiArr = Array(10) { "" }
+    private var serverNextMapArr = Array(10) { "" }
+    private var serverNominateMapArr = Array(10) { "" }
+    private var serverPlayerArr = Array(10) { 0 }
+    private var serverMaxPlayerArr = Array(10) { 0 }
     fun webForZED() {
         //构建ServerList 请求
         val okHttpclient = OkHttpClient.Builder().build()
@@ -330,59 +377,70 @@ object Zed {
                 val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
                 //寻找服务器详细数据中需要的项
                 serverPlayerArr[serverNumber] = serverDataJSON.get("Players").toString().toInt()
+                serverMaxPlayerArr[serverNumber] = serverDataJSON.get("MaxPlayers").toString().toInt()
                 serverMapArr[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
+                serverMapChiArr[serverNumber] = serverDataJSON.get("MapChi").toString().replace("\"", "")
             }
         }
     }
 
-    fun dataOutput():String {
+    fun dataOutput(): String {
         var response = "   [僵尸乐园 ZE 服务器数据]\n"
-        for ( i in 1 until 8) {
-            response += "\n".plus(serverNameArr[i]).plus("  ").plus(serverPlayerArr[i].toString() + "/64\n")
-                .plus("地图："+ serverMapArr[i] + "\n")
+        for (i in 1 until 8) {
+            response += "\n".plus(serverNameArr[i]).plus("  ")
+                .plus(serverPlayerArr[i].toString() + "/" + serverMaxPlayerArr[i] + "\n")
+                .plus("地图：" + serverMapArr[i] + "/" + serverMapChiArr[i] + "\n")
                 .plus("地址：" + serverAddressArr[i] + "\n")
                 .plus(serverNextMapArr[i])
         }
         return response
     }
 
-    private var hasOBJServerArr = Array(10) {false}
-    private var hasOBJServerMapArr = Array(10) {""}
-    private var hasOBJServerNextMapArr = Array(10) {""}
-    private var hasOBJServerNominateMapArr = Array(10) {""}
+    private var hasOBJServerArr = Array(10) { false }
+    private var hasOBJServerMapArr = Array(10) { "" }
+    private var hasOBJServerNextMapArr = Array(10) { "" }
+    private var hasOBJServerNominateMapArr = Array(10) { "" }
     fun findOBJ() {
         //初始化识别obj正则
         val objregex = "(?i)^(ze_obj_)".toRegex()
-        if (!FindOBJ.FindON) {return}
+        if (!FindOBJ.FindON) {
+            return
+        }
         for (i in 1 until 7) {
             //在服务器现在地图，下张地图和预定地图中寻找obj
-            val ifServerHasOBJ = (objregex.containsMatchIn(serverMapArr[i])) || objregex.containsMatchIn(serverNextMapArr[i]) || objregex.containsMatchIn(serverNominateMapArr[i])
+            val ifServerHasOBJ =
+                (objregex.containsMatchIn(serverMapArr[i])) || objregex.containsMatchIn(serverNextMapArr[i]) || objregex.containsMatchIn(
+                    serverNominateMapArr[i]
+                )
 
             //如果标注为OBJ的服务器中地图跟已有的地图不一样（发生在下张图/预定地图也是OBJ的情况）则重新触发obj判定
-            val ifOBJServersHaveSameMaps = (hasOBJServerMapArr[i] == serverMapArr[i] && hasOBJServerNextMapArr[i] == serverNextMapArr[i] && hasOBJServerNominateMapArr[i] == serverNominateMapArr[i])
+            val ifOBJServersHaveSameMaps =
+                (hasOBJServerMapArr[i] == serverMapArr[i] && hasOBJServerNextMapArr[i] == serverNextMapArr[i] && hasOBJServerNominateMapArr[i] == serverNominateMapArr[i])
             if (hasOBJServerArr[i] && !ifOBJServersHaveSameMaps) {
                 hasOBJServerArr[i] = false
             }
 
             //如果该服务器未被标注为obj则标注，已标注且还有OBJ则不触发（防止多次触发）
-            if(!hasOBJServerArr[i] && ifServerHasOBJ) {
+            if (!hasOBJServerArr[i] && ifServerHasOBJ) {
                 hasOBJServerArr[i] = true
-                FindOBJ.sendZEDOBJtoGroup(serverNameArr[i],
+                FindOBJ.sendZEDOBJtoGroup(
+                    serverNameArr[i],
                     "地图：" + serverMapArr[i],
                     "下张地图" + serverNextMapArr[i],
                     "预定地图" + serverNominateMapArr[i],
-                    serverPlayerArr[i])
+                    serverPlayerArr[i]
+                )
                 hasOBJServerMapArr[i] = serverMapArr[i]
                 hasOBJServerNextMapArr[i] = serverNextMapArr[i]
                 hasOBJServerNominateMapArr[i] = serverNominateMapArr[i]
-            } else if (!ifServerHasOBJ){
+            } else if (!ifServerHasOBJ) {
                 hasOBJServerArr[i] = false
             }
         }
     }
 }
 
-fun webForFys():String {
+fun webForFys(): String {
     val token = "swallowtail"
     val baseurl = "https://fyscs.com/silverwing/system/dashboard"
     //构建http请求
@@ -397,17 +455,21 @@ fun webForFys():String {
     var serverString = "   [风云社 ZE 服务器数据]"
     response.close()
     val serverDataArray = JsonParser.parseString(responseData).asJsonObject.get("servers").asJsonArray
-    for (i in 0 until  serverDataArray.size()) {
+    for (i in 0 until serverDataArray.size()) {
         val server = serverDataArray.get(i).asJsonObject
         //排除非ZE服务器
-        if(server.get("modeId").toString() != "1001") {continue}
+        if (server.get("modeId").toString() != "1001") {
+            continue
+        }
         val serverName = server.get("name").toString().replace("\"", "")
         val serverMap = server.get("map").toString().replace("\"", "")
         val currentPlayers = server.get("currentPlayers").toString()
         val maxPlayers = server.get("maxPlayers").toString()
         val host = server.get("host").toString().replace("\"", "")
         val port = server.get("port").toString()
-        serverString = serverString.plus("\n\n$serverName").plus(" 人数：$currentPlayers/$maxPlayers\n").plus("地图：$serverMap\n").plus("地址：$host:$port")
+        serverString =
+            serverString.plus("\n\n$serverName").plus(" 人数：$currentPlayers/$maxPlayers\n").plus("地图：$serverMap\n")
+                .plus("地址：$host:$port")
     }
     return serverString
 }

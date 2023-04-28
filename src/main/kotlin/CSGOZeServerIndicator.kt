@@ -12,6 +12,7 @@ import net.mamoe.mirai.console.plugin.id
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
+import net.mamoe.mirai.console.plugin.jvm.reloadPluginData
 import net.mamoe.mirai.utils.info
 
 object Indicator: KotlinPlugin(
@@ -38,6 +39,7 @@ object Indicator: KotlinPlugin(
         ZeSetCommand().register()
 
         reloadPluginConfig(Config)
+        reloadPluginData(Data)
 
         CoroutineScope(Dispatchers.IO).launch {
             TopZE.updateMapData()
@@ -48,6 +50,8 @@ object Indicator: KotlinPlugin(
     }
 
     override fun onDisable() {
+        Config.save()
+        Data.save()
         CommandManager.INSTANCE.unregisterAllCommands(Indicator)
         logger.info {"ZE Server Indicator 已关闭"}
     }
