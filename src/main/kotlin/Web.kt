@@ -9,31 +9,64 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
-fun webForTopZE(): String {
-    val token = Config.topZEToken
-    val baseurl = "https://api-clan.rushbgogogo.com/api/v1/systemApp/gameServerRoomsList?mode=ze"
-    //构建http请求
-    val okHttpclient = OkHttpClient.Builder().build()
-    val request = Request.Builder()
-        .url(baseurl)
-        .header("clan_auth_token", token)
-        .get()
-        .build()
-    val response = okHttpclient.newCall(request).execute()
-    val responseData = response.body!!.string()
-    response.close()
-    //将请求转换为JsonObject并提取其中message数组部分
-    val responseDataJSON = JsonParser.parseString(responseData).asJsonObject.getAsJsonArray("message")
-    var serverString = "   [5e ZE 服务器数据]"
-    //遍历数组中每一项中所需的数据
-    for (i in 0 until responseDataJSON.size()){
-        val server = responseDataJSON.get(i)
-        val name = server.asJsonObject.get("Name").toString()
-        val playerCount = server.asJsonObject.get("PlayerCount").toString()
-        val gameMap = server.asJsonObject.get("GameMap").toString()
-        serverString = serverString.plus("\n\n$name  ").plus(playerCount+"人\n").plus(gameMap)
+object TopZE {
+
+    private var mapData = JsonObject()
+    fun webForTopZE(): String {
+        val token = Config.topZEToken
+        val baseurl = "https://api-clan.rushbgogogo.com/api/v1/systemApp/gameServerRoomsList?mode=ze"
+        //构建http请求
+        val okHttpclient = OkHttpClient.Builder().build()
+        val request = Request.Builder()
+            .url(baseurl)
+            .header("clan_auth_token", token)
+            .get()
+            .build()
+        val response = okHttpclient.newCall(request).execute()
+        val responseData = response.body!!.string()
+        response.close()
+        //将请求转换为JsonObject并提取其中message数组部分
+        val responseDataJSON = JsonParser.parseString(responseData).asJsonObject.getAsJsonArray("message")
+        var serverString = "   [5e ZE 服务器数据]"
+        //遍历数组中每一项中所需的数据
+        for (i in 0 until responseDataJSON.size()){
+            val server = responseDataJSON.get(i)
+            val name = server.asJsonObject.get("Name").toString().replace("\"", "")
+            val playerCount = server.asJsonObject.get("PlayerCount").toString().replace("\"", "")
+            val gameMap = server.asJsonObject.get("GameMap").toString().replace("\"", "")
+            serverString = serverString.plus("\n\n$name  ").plus(playerCount+"人\n").plus(gameMap + "\n")
+
+            if (mapData.has(gameMap)) {
+                val mapInfo = mapData.get(gameMap).asJsonObject
+                val mapCNName = mapInfo.get("chinese").toString().replace("\"", "")
+                val mapDifficulty = mapInfo.get("level").toString().replace("\"", "")
+                val mapTag = mapInfo.get("tag").toString().replace("\"", "")
+                serverString = serverString
+                    .plus("译名：$mapCNName\n")
+                    .plus("难度：$mapDifficulty\n")
+                    .plus("Tag：$mapTag \n")
+            }
+        }
+        return serverString
     }
-    return serverString.replace("\"", "")
+
+    fun updateMapData() {
+        val serverURL = "https://raw.fastgit.org/mr2b-wmk/GOCommunity-ZEConfigs/master/mapchinese.cfg"
+        val okHttpClient = OkHttpClient.Builder().build()
+        val request = Request.Builder()
+            .url(serverURL)
+            .get()
+            .build()
+        val response = okHttpClient.newCall(request).execute()
+        val mapDataString = response.body!!.string()
+        val mapDataJsonOut = mapDataString
+            .replace("\"\t\t\"", "\": \"")
+            .replace("\"\n\t\t\"", "\",\n\t\t\"")
+            .replace("}\n\t\"", "},\n\t\"")
+            .replace("\"\n\t{", "\":\n\t{")
+            .replace("\"MapInfo\"", "")
+        mapData = JsonParser.parseString(mapDataJsonOut).asJsonObject
+    }
 }
 
 object UB {

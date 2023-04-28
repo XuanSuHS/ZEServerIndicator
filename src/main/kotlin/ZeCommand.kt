@@ -5,6 +5,7 @@ import net.mamoe.mirai.console.command.CommandSenderOnMessage
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.permission.Permission
+import top.xuansu.mirai.zeServerIndicator.TopZE.webForTopZE
 
 
 class ZeCommand(perm: Permission) : CompositeCommand(
@@ -111,5 +112,17 @@ class FindOBJCommand(perm: Permission) : CompositeCommand(
     suspend fun CommandSender.off() {
         FindOBJ.FindON = false
         sendMessage("本群OBJ提醒已关闭")
+    }
+}
+
+class ZeSetCommand(): CompositeCommand(
+    owner = Indicator,
+    primaryName = "ze-set"
+) {
+    @SubCommand("updateMapData")
+    @Description("更新地图翻译数据，目前仅适用于topZE社区")
+    suspend fun CommandSender.updateMapData() {
+        TopZE.updateMapData()
+        sendMessage("地图数据更新完毕")
     }
 }

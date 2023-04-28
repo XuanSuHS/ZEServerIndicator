@@ -1,5 +1,8 @@
 package top.xuansu.mirai.zeServerIndicator
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.permission.Permission
@@ -32,8 +35,13 @@ object Indicator: KotlinPlugin(
         ZedCommand(ZEPermission).register()
         FysCommand(ZEPermission).register()
         FindOBJCommand(OBJPermission).register()
+        ZeSetCommand().register()
 
         reloadPluginConfig(Config)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            TopZE.updateMapData()
+        }
 
         logger.info { "ZE Server Indicator 已启动" }
         coroutineOnEnable()
