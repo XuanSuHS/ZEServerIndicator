@@ -80,6 +80,7 @@ object UB {
     private var serverMapArr = Array(12) { "" }
     private var serverNextMapArr = Array(12) { "" }
     private var serverPlayerArr = Array(12) { 0 }
+    private var serverAddressArr = Array(12) { "" }
 
     var isWebsocketFailed = false
     private val okHttpClient = OkHttpClient.Builder()
@@ -110,6 +111,11 @@ object UB {
         //将服务器名写入数组
         serverNameArr[serverNumber] =
             serverData.get("name").toString().replace("\"", "").replace(" Q群 749180050", "").replace("UB社区 ", "")
+
+        //将服务器地址写入数组
+        val serverHost = serverData.get("host").toString().replace("\"", "")
+        val serverPort = serverData.get("port").toString()
+        serverAddressArr[serverNumber] = serverHost.plus(":").plus(serverPort)
 
         //将比分写入数组
         tScoreArr[serverNumber] = serverData.get("t_score").toString().toInt()
@@ -152,7 +158,8 @@ object UB {
             FindOBJ.sendUBOBJtoGroup(
                 "UB社区" + serverNameArr[serverNumber],
                 "下张地图：" + serverNextMapArr[serverNumber],
-                serverPlayerArr[serverNumber]
+                serverPlayerArr[serverNumber],
+                serverAddressArr[serverNumber]
             )
         }
     }
@@ -239,7 +246,7 @@ object UB {
     }
 
     private fun getMapChi(map: String): String? {
-        return if (Data.UBMapChi[map] != null ) {
+        return if (Data.UBMapChi[map] != null) {
             Data.UBMapChi[map]
         } else {
             val mapRequest = Request.Builder()
@@ -264,9 +271,9 @@ object UB {
                 continue
             }
             var serverNextMap = ""
-            if (!(serverNextMapArr[i] == serverMapArr[i] || serverNextMapArr[i].length <= 3))  {
+            if (!(serverNextMapArr[i] == serverMapArr[i] || serverNextMapArr[i].length <= 3)) {
                 val serverNextMapChi = getMapChi(serverNextMapArr[i])
-                serverNextMap = "\n下张地图：" + serverNextMapArr[i] + "\n地图译名：$serverNextMapChi"
+                serverNextMap = "下张地图：" + serverNextMapArr[i] + "\n地图译名：$serverNextMapChi\n"
             }
 
             val serverMapChi = getMapChi(serverMapArr[i])
@@ -274,8 +281,9 @@ object UB {
             response += "\n------------------------------\n".plus("【" + serverNameArr[i] + "】").plus(" ")
                 .plus(serverPlayerArr[i]).plus("/64\n")
                 .plus("地图：" + serverMapArr[i] + "\n译名：$serverMapChi" + "\n")
-                .plus("比分：" + ctScoreArr[i] + "/" + tScoreArr[i])
+                .plus("比分：" + ctScoreArr[i] + "/" + tScoreArr[i] + "\n")
                 .plus(serverNextMap)
+                .plus("地址：" + serverAddressArr[i])
         }
         return response
     }
@@ -285,19 +293,21 @@ object UB {
         if (!FindOBJ.FindON) {
             return
         }
-        val objregex = "(?i)^(ze_obj_)".toRegex()
+        val objRegex = "(?i)^(ze_obj_)".toRegex()
         for (i in 1 until 12) {
-            if (objregex.containsMatchIn(serverMapArr[i])) {
+            if (objRegex.containsMatchIn(serverMapArr[i])) {
                 FindOBJ.sendUBOBJtoGroup(
                     "UB社区 " + serverNameArr[i],
                     "地图：" + serverMapArr[i],
-                    serverPlayerArr[i]
+                    serverPlayerArr[i],
+                    serverAddressArr[i]
                 )
-            } else if (objregex.containsMatchIn(serverNextMapArr[i])) {
+            } else if (objRegex.containsMatchIn(serverNextMapArr[i])) {
                 FindOBJ.sendUBOBJtoGroup(
                     "UB社区 " + serverNameArr[i],
                     "下张地图：" + serverNextMapArr[i],
-                    serverPlayerArr[i]
+                    serverPlayerArr[i],
+                    serverAddressArr[i]
                 )
             }
         }
@@ -431,7 +441,8 @@ object Zed {
                     "地图：" + serverMapArr[i],
                     "下张地图" + serverNextMapArr[i],
                     "预定地图" + serverNominateMapArr[i],
-                    serverPlayerArr[i]
+                    serverPlayerArr[i],
+                    serverAddressArr[i]
                 )
                 hasOBJServerMapArr[i] = serverMapArr[i]
                 hasOBJServerNextMapArr[i] = serverNextMapArr[i]
