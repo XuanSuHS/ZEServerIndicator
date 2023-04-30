@@ -97,7 +97,6 @@ class FindOBJCommand(perm: Permission) : CompositeCommand(
         FindOBJ.group = fromEvent.subject
         FindOBJ.FindON = true
         sendMessage("本群OBJ提醒已开启")
-        UB.firstTimeFindOBJ()
     }
 
     @SubCommand("status")
