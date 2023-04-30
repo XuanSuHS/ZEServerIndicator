@@ -102,7 +102,9 @@ class FindOBJCommand(perm: Permission) : CompositeCommand(
     @SubCommand("status")
     @Description("查看提醒OBJ群列表")
     suspend fun CommandSender.status() {
-        val message = FindOBJ.FindON.toString() + "\n" + FindOBJ.group.id
+        val message = if (FindOBJ.FindON) { "开了" + "\n群：" + FindOBJ.group.id } else {
+            "没开"
+        }
         sendMessage(message)
     }
 
