@@ -133,7 +133,7 @@ object UB {
         if (objRegex.containsMatchIn(map[serverID])) {
             sendOBJtoGroup(serverID, "Map")
         }
-        if (objRegex.containsMatchIn(nextMap[serverID])) {
+        if (objRegex.containsMatchIn(nextMap[serverID]) && (nextMap[serverID] != map[serverID])) {
             sendOBJtoGroup(serverID, "NextMap")
         }
 
