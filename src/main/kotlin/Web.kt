@@ -306,7 +306,7 @@ object UB {
         }
 
         var message = "发现OBJ!\n"
-            .plus(serverName[id] + "\n")
+            .plus("UB社区 "+serverName[id] + "\n")
 
         message += when (announceReason) {
             "Map" -> {
@@ -315,7 +315,7 @@ object UB {
                 } else {
                     announcedOBJMap[id] = map[id]
                 }
-                (map[id] + "\n")
+                ("地图：" + map[id] + "\n")
             }
 
             "NextMap" -> {
@@ -324,7 +324,7 @@ object UB {
                 } else {
                     announcedNextOBJMap[id] = nextMap[id]
                 }
-                (nextMap[id] + "\n")
+                ("下张地图：" + nextMap[id] + "\n")
             }
 
             else -> {
