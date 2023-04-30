@@ -131,10 +131,10 @@ object UB {
 
         //寻找OBJ!
         if (objRegex.containsMatchIn(map[serverID])) {
-            sendOBJtoGroup(serverID,"Map")
+            sendOBJtoGroup(serverID, "Map")
         }
         if (objRegex.containsMatchIn(nextMap[serverID])) {
-            sendOBJtoGroup(serverID,"NextMap")
+            sendOBJtoGroup(serverID, "NextMap")
         }
 
         //根据player数组里的个数获取人数,将人数写入数组
@@ -164,7 +164,7 @@ object UB {
 
         //寻找OBJ!
         if (objRegex.containsMatchIn(nextMap[serverID])) {
-            sendOBJtoGroup(serverID,"NextMap")
+            sendOBJtoGroup(serverID, "NextMap")
         }
     }
 
@@ -176,7 +176,7 @@ object UB {
         map[serverID] = serverJSON.get("data").asJsonObject.get("name").toString().replace("\"", "")
 
         if (objRegex.containsMatchIn(map[serverID])) {
-            sendOBJtoGroup(serverID,"Map")
+            sendOBJtoGroup(serverID, "Map")
         }
     }
 
@@ -317,6 +317,7 @@ object UB {
                 }
                 (map[id] + "\n")
             }
+
             "NextMap" -> {
                 if (announcedNextOBJMap[id] == nextMap[id]) {
                     return
@@ -325,6 +326,7 @@ object UB {
                 }
                 (nextMap[id] + "\n")
             }
+
             else -> {
                 return
             }
@@ -435,7 +437,11 @@ object Zed {
                 playerCount[serverNumber] = serverDataJSON.get("Players").toString().toInt()
                 maxPlayer[serverNumber] = serverDataJSON.get("MaxPlayers").toString().toInt()
                 map[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
-                mapChi[serverNumber] = serverDataJSON.get("MapChi").toString().replace("\"", "")
+                mapChi[serverNumber] = if (serverDataJSON.has("MapChi")) {
+                    serverDataJSON.get("MapChi").toString().replace("\"", "")
+                } else {
+                    ""
+                }
 
                 //确认地图是不是OBJ
                 if (objRegex.containsMatchIn(map[serverNumber])) {
@@ -455,8 +461,14 @@ object Zed {
         for (i in 1 until 8) {
             response += "\n".plus(serverName[i]).plus("  ")
                 .plus(playerCount[i].toString() + "/" + maxPlayer[i] + "\n")
-                .plus("地图：" + map[i] + "\n译名：" + mapChi[i] + "\n")
-                .plus("地址：" + serverAddress[i] + "\n")
+                .plus("地图：" + map[i] + "\n")
+
+            //检查地图有无翻译
+            if (mapChi[i] != "") {
+                response = response.plus("译名：" + mapChi[i] + "\n")
+            }
+
+            response = response.plus("地址：" + serverAddress[i] + "\n")
                 .plus(nextMap[i])
                 .plus(nominateMap[i])
         }
