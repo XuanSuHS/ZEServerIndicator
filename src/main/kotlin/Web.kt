@@ -417,33 +417,35 @@ object Zed {
                 }
             }
 
-            //构建 每个服务器的具体数据 请求
-            val serverInfoBaseURL = "http://zombieden.cn/getserverinfo.php?address="
-            val serverURL = serverInfoBaseURL.plus(serverAddress[serverNumber])
-            val serverInfoRequest = Request.Builder()
-                .url(serverURL)
-                .get()
-                .build()
-            val serverInfoResponse = okHttpclient.newCall(serverInfoRequest).execute()
-            val serverData = serverInfoResponse.body!!.string()
-            if (!serverData.contains("HostName")) {
-                continue
-            }
-            val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
-            //寻找服务器详细数据中需要的项
-            playerCount[serverNumber] = serverDataJSON.get("Players").toString().toInt()
-            maxPlayer[serverNumber] = serverDataJSON.get("MaxPlayers").toString().toInt()
-            map[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
-            mapChi[serverNumber] = serverDataJSON.get("MapChi").toString().replace("\"", "")
+            CoroutineScope(Dispatchers.IO).launch {
+                //构建 每个服务器的具体数据 请求
+                val serverInfoBaseURL = "http://zombieden.cn/getserverinfo.php?address="
+                val serverURL = serverInfoBaseURL.plus(serverAddress[serverNumber])
+                val serverInfoRequest = Request.Builder()
+                    .url(serverURL)
+                    .get()
+                    .build()
+                val serverInfoResponse = okHttpclient.newCall(serverInfoRequest).execute()
+                val serverData = serverInfoResponse.body!!.string()
+                if (!serverData.contains("HostName")) {
+                    return@launch
+                }
+                val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
+                //寻找服务器详细数据中需要的项
+                playerCount[serverNumber] = serverDataJSON.get("Players").toString().toInt()
+                maxPlayer[serverNumber] = serverDataJSON.get("MaxPlayers").toString().toInt()
+                map[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
+                mapChi[serverNumber] = serverDataJSON.get("MapChi").toString().replace("\"", "")
 
-            //确认地图是不是OBJ
-            if (objRegex.containsMatchIn(map[serverNumber])) {
-                serverOBJStatus.add("Map")
-            }
+                //确认地图是不是OBJ
+                if (objRegex.containsMatchIn(map[serverNumber])) {
+                    serverOBJStatus.add("Map")
+                }
 
-            //如果找到OBJ且FindOBJ开启则发送消息
-            if (serverOBJStatus.isNotEmpty() && FindOBJ.FindON) {
-                sendOBJtoGroup(serverNumber, serverOBJStatus)
+                //如果找到OBJ且FindOBJ开启则发送消息
+                if (serverOBJStatus.isNotEmpty() && FindOBJ.FindON) {
+                    sendOBJtoGroup(serverNumber, serverOBJStatus)
+                }
             }
         }
     }
