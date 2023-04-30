@@ -326,6 +326,10 @@ object Zed {
     private var serverNominateMapArr = Array(10) { "" }
     private var serverPlayerArr = Array(10) { 0 }
     private var serverMaxPlayerArr = Array(10) { 0 }
+    private val objRegex = "(?i)^(ze_obj_)".toRegex()
+
+    private val OBJAnnouncedFor = Array(10) { "" }
+
     fun webForZED() {
         //构建ServerList 请求
         val okHttpclient = OkHttpClient.Builder().build()
@@ -343,56 +347,82 @@ object Zed {
 
         //获取变换后JSON内信息
         for (i in 0 until serverListResponseDataJSON.size()) {
+
+            val serverOBJStatus: MutableSet<String> = mutableSetOf()
+
             val server = serverListResponseDataJSON.get(i).asJsonObject
 
             //跳过ServerList中非 ZE/ZM 服务器
             if (server.get("serverGroupSortNumber").toString() != "1") {
                 continue
             }
-            //确定并跳过 ZM 服务器
+
+            //跳过 ZM 服务器
             if (server.get("serverName").toString().contains("ZM")) {
                 continue
             }
-            //寻找ServerList中需要的JSON项
+
+            //确定服务器ID
             val serverNumber = server.get("serverID").toString().replace("\"", "").toInt().minus(100)
+
+            //寻找服务器名与地址
             serverNameArr[serverNumber] = server.get("serverName").toString().replace("\"", "").replace(" 僵尸逃跑", "")
             serverAddressArr[serverNumber] =
                 server.get("ip").toString().plus(":").plus(server.get("port").toString()).replace("\"", "")
 
-            //单独处理地图
-            //如果没有则不显示这两个字段
+            //寻找服务器下张地图
+            //如果没有则不显示
             val nextMap = server.get("nextMap").toString().replace("\"", "")
-            serverNextMapArr[serverNumber] = if (nextMap.contains("暂无")) {
-                ""
+            if (nextMap.contains("暂无")) {
+                serverNextMapArr[serverNumber] = ""
             } else {
-                "下张地图：$nextMap\n"
-            }
-            val nominateMap = server.get("nominateMap").toString().replace("\"", "")
-            serverNominateMapArr[serverNumber] = if (nominateMap.contains("暂无")) {
-                ""
-            } else {
-                "预定地图：$nominateMap\n"
+                serverNextMapArr[serverNumber] = "下张地图：$nextMap\n"
+                //确认下张地图是不是OBJ
+                if (objRegex.containsMatchIn(serverNextMapArr[serverNumber])) {
+                    serverOBJStatus.add("NextMap")
+                }
             }
 
-            CoroutineScope(Dispatchers.IO).launch {
-                //构建 每个服务器的具体数据 请求
-                val serverInfoBaseURL = "http://zombieden.cn/getserverinfo.php?address="
-                val serverURL = serverInfoBaseURL.plus(serverAddressArr[serverNumber])
-                val serverInfoRequest = Request.Builder()
-                    .url(serverURL)
-                    .get()
-                    .build()
-                val serverinforesponse = okHttpclient.newCall(serverInfoRequest).execute()
-                val serverData = serverinforesponse.body!!.string()
-                if (!serverData.contains("HostName")) {
-                    return@launch
+            //寻找服务器预定地图
+            //如果没有则不显示
+            val nominateMap = server.get("nominateMap").toString().replace("\"", "")
+            if (nominateMap.contains("暂无")) {
+                serverNominateMapArr[serverNumber] = ""
+            } else {
+                serverNominateMapArr[serverNumber] = "预定地图：$nominateMap\n"
+                //确认预定地图是不是OBJ
+                if (objRegex.containsMatchIn(serverNominateMapArr[serverNumber])) {
+                    serverOBJStatus.add("NominateMap")
                 }
-                val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
-                //寻找服务器详细数据中需要的项
-                serverPlayerArr[serverNumber] = serverDataJSON.get("Players").toString().toInt()
-                serverMaxPlayerArr[serverNumber] = serverDataJSON.get("MaxPlayers").toString().toInt()
-                serverMapArr[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
-                serverMapChiArr[serverNumber] = serverDataJSON.get("MapChi").toString().replace("\"", "")
+            }
+
+            //构建 每个服务器的具体数据 请求
+            val serverInfoBaseURL = "http://zombieden.cn/getserverinfo.php?address="
+            val serverURL = serverInfoBaseURL.plus(serverAddressArr[serverNumber])
+            val serverInfoRequest = Request.Builder()
+                .url(serverURL)
+                .get()
+                .build()
+            val serverInfoResponse = okHttpclient.newCall(serverInfoRequest).execute()
+            val serverData = serverInfoResponse.body!!.string()
+            if (!serverData.contains("HostName")) {
+                continue
+            }
+            val serverDataJSON = JsonParser.parseString(serverData).asJsonObject
+            //寻找服务器详细数据中需要的项
+            serverPlayerArr[serverNumber] = serverDataJSON.get("Players").toString().toInt()
+            serverMaxPlayerArr[serverNumber] = serverDataJSON.get("MaxPlayers").toString().toInt()
+            serverMapArr[serverNumber] = serverDataJSON.get("Map").toString().replace("\"", "")
+            serverMapChiArr[serverNumber] = serverDataJSON.get("MapChi").toString().replace("\"", "")
+
+            //确认地图是不是OBJ
+            if (objRegex.containsMatchIn(serverMapArr[serverNumber])) {
+                serverOBJStatus.add("Map")
+            }
+
+            //如果找到OBJ且FindOBJ开启则发送消息
+            if (serverOBJStatus.isNotEmpty() && FindOBJ.FindON) {
+                sendOBJtoGroup(serverNumber, serverOBJStatus)
             }
         }
     }
@@ -405,53 +435,41 @@ object Zed {
                 .plus("地图：" + serverMapArr[i] + "\n译名：" + serverMapChiArr[i] + "\n")
                 .plus("地址：" + serverAddressArr[i] + "\n")
                 .plus(serverNextMapArr[i])
+                .plus(serverNominateMapArr[i])
         }
         return response
     }
 
-    private var hasOBJServerArr = Array(10) { false }
-    private var hasOBJServerMapArr = Array(10) { "" }
-    private var hasOBJServerNextMapArr = Array(10) { "" }
-    private var hasOBJServerNominateMapArr = Array(10) { "" }
-    
-    fun findOBJ() {
-        //初始化识别obj正则
-        val objRegex = "(?i)^(ze_obj_)".toRegex()
-        if (!FindOBJ.FindON) {
+    private fun sendOBJtoGroup(
+        id: Int,
+        announcingReason: MutableSet<String>
+    ) {
+
+        var announceReason = "Map"
+        var message = "有OBJ!\n"
+            .plus(serverNameArr[id] + "\n")
+            .plus(serverMapArr[id] + "\n")
+            .plus("人数：" + serverPlayerArr[id] + "/" + serverMaxPlayerArr[id] + "\n")
+            .plus("地址：" + serverAddressArr[id])
+
+
+        if (announcingReason.contains("NextMap")) {
+            message = message.plus("\n下张地图：" + serverNextMapArr[id])
+            announceReason += ",NextMap"
+        }
+
+        if (announcingReason.contains("NominateMap")) {
+            message = message.plus("\n预定地图：" + serverNominateMapArr[id])
+            announceReason += ",NominateMap"
+        }
+
+        //如果本次发送的信息与之前一样则不再发送
+        if (OBJAnnouncedFor[id] == announceReason) {
             return
         }
-        for (i in 1 until 7) {
-            //在服务器现在地图，下张地图和预定地图中寻找obj
-            val ifServerHasOBJ =
-                (objRegex.containsMatchIn(serverMapArr[i])) || objRegex.containsMatchIn(serverNextMapArr[i]) || objRegex.containsMatchIn(
-                    serverNominateMapArr[i]
-                )
 
-            //如果标注为OBJ的服务器中地图跟已有的地图不一样（发生在下张图/预定地图也是OBJ的情况）则重新触发obj判定
-            val ifOBJServersHaveSameMaps =
-                (hasOBJServerMapArr[i] == serverMapArr[i] && hasOBJServerNextMapArr[i] == serverNextMapArr[i] && hasOBJServerNominateMapArr[i] == serverNominateMapArr[i])
-            if (hasOBJServerArr[i] && !ifOBJServersHaveSameMaps) {
-                hasOBJServerArr[i] = false
-            }
-
-            //如果该服务器未被标注为obj则标注，已标注且还有OBJ则不触发（防止多次触发）
-            if (!hasOBJServerArr[i] && ifServerHasOBJ) {
-                hasOBJServerArr[i] = true
-                FindOBJ.sendZEDOBJtoGroup(
-                    serverNameArr[i],
-                    "地图：" + serverMapArr[i],
-                    "下张地图" + serverNextMapArr[i],
-                    "预定地图" + serverNominateMapArr[i],
-                    serverPlayerArr[i],
-                    serverAddressArr[i]
-                )
-                hasOBJServerMapArr[i] = serverMapArr[i]
-                hasOBJServerNextMapArr[i] = serverNextMapArr[i]
-                hasOBJServerNominateMapArr[i] = serverNominateMapArr[i]
-            } else if (!ifServerHasOBJ) {
-                hasOBJServerArr[i] = false
-            }
-        }
+        CoroutineScope(Dispatchers.Default).launch { FindOBJ.group.sendMessage(message) }
+        OBJAnnouncedFor[id] = announceReason
     }
 }
 

@@ -18,7 +18,6 @@ fun ubAsync() {
 fun zedAsync() {
     CoroutineScope(Dispatchers.IO).launch {
         Zed.webForZED()
-        Zed.findOBJ()
     }
 }
 

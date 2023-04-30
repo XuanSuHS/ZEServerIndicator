@@ -98,7 +98,6 @@ class FindOBJCommand(perm: Permission) : CompositeCommand(
         FindOBJ.FindON = true
         sendMessage("本群OBJ提醒已开启")
         UB.firstTimeFindOBJ()
-        Zed.findOBJ()
     }
 
     @SubCommand("status")
