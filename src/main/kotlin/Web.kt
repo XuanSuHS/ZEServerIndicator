@@ -413,16 +413,17 @@ object Zed {
     private var hasOBJServerMapArr = Array(10) { "" }
     private var hasOBJServerNextMapArr = Array(10) { "" }
     private var hasOBJServerNominateMapArr = Array(10) { "" }
+    
     fun findOBJ() {
         //初始化识别obj正则
-        val objregex = "(?i)^(ze_obj_)".toRegex()
+        val objRegex = "(?i)^(ze_obj_)".toRegex()
         if (!FindOBJ.FindON) {
             return
         }
         for (i in 1 until 7) {
             //在服务器现在地图，下张地图和预定地图中寻找obj
             val ifServerHasOBJ =
-                (objregex.containsMatchIn(serverMapArr[i])) || objregex.containsMatchIn(serverNextMapArr[i]) || objregex.containsMatchIn(
+                (objRegex.containsMatchIn(serverMapArr[i])) || objRegex.containsMatchIn(serverNextMapArr[i]) || objRegex.containsMatchIn(
                     serverNominateMapArr[i]
                 )
 
