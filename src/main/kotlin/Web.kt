@@ -451,6 +451,8 @@ object Zed {
                 //如果找到OBJ且FindOBJ开启则发送消息
                 if (serverOBJStatus.isNotEmpty() && FindOBJ.FindON) {
                     sendOBJtoGroup(serverNumber, serverOBJStatus)
+                } else {
+                    OBJAnnouncedFor[serverNumber] = ""
                 }
             }
         }
@@ -483,7 +485,7 @@ object Zed {
         var announceReason = "Map"
         var message = "有OBJ!\n"
             .plus(serverName[id] + "\n")
-            .plus(map[id] + "\n")
+            .plus("地图：" + map[id] + "\n")
             .plus("人数：" + playerCount[id] + "/" + maxPlayer[id] + "\n")
             .plus("地址：" + serverAddress[id])
 
