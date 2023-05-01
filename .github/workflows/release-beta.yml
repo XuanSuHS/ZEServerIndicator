@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - 'release-beta'
+    types: [closed]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -15,6 +16,7 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
 
     steps:
       - uses: actions/checkout@v3
@@ -42,6 +44,7 @@ jobs:
         with:
           tag_name: v${{ env.ReleaseVersion }}
           release_name: v${{ env.ReleaseVersion }}
+          body: ${{ github.event.pull_request.body }}
           draft: false
           prerelease: true
           
