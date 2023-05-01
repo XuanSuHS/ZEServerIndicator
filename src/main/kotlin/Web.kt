@@ -271,29 +271,56 @@ object UB {
         }
     }
 
-    fun dataOutput(): String {
-        var response = "   [UB 社区 ZE 服务器数据]"
-        for (i in 1 until 12) {
-            //判定有没有定下张地图
-            if (serverName[i] == "") {
-                continue
-            }
-            var serverNextMap = ""
-            if (!(nextMap[i] == map[i] || nextMap[i].length <= 3)) {
-                val serverNextMapChi = getMapChi(nextMap[i])
-                serverNextMap = "下张地图：" + nextMap[i] + "\n地图译名：$serverNextMapChi\n"
-            }
+    fun dataOutput(id: Int = 0): String {
+        when (id) {
+            0 -> {
+                var response = "   [UB 社区 ZE 服务器数据]"
+                for (i in 1 until 12) {
+                    //判定有没有定下张地图
+                    if (serverName[i] == "") {
+                        continue
+                    }
+                    var serverNextMap = ""
+                    if (!(nextMap[i] == map[i] || nextMap[i].length <= 3)) {
+                        val serverNextMapChi = getMapChi(nextMap[i])
+                        serverNextMap = "下张地图：" + nextMap[i] + "\n地图译名：$serverNextMapChi\n"
+                    }
 
-            val serverMapChi = getMapChi(map[i])
+                    val serverMapChi = getMapChi(map[i])
 
-            response += "\n------------------------------\n".plus("【" + serverName[i] + "】").plus(" ")
-                .plus(playerCount[i]).plus("/64\n")
-                .plus("地图：" + map[i] + "\n译名：$serverMapChi" + "\n")
-                .plus("比分：" + ctScore[i] + "/" + tScore[i] + "\n")
-                .plus(serverNextMap)
-                .plus("地址：" + serverAddress[i])
+                    response += "\n------------------------------\n".plus("【" + serverName[i] + "】").plus(" ")
+                        .plus(playerCount[i]).plus("/64\n")
+                        .plus("地图：" + map[i] + "\n译名：$serverMapChi" + "\n")
+                        .plus("比分：" + ctScore[i] + "/" + tScore[i] + "\n")
+                        .plus(serverNextMap)
+                        .plus("地址：" + serverAddress[i])
+                }
+                return response
+            }
+            in 1..11 -> {
+                //判定有没有定下张地图
+                if (serverName[id] == "") {
+                    return "无法获取此服务器信息"
+                }
+
+                val serverNextMap = if (!(nextMap[id] == map[id] || nextMap[id].length <= 3)) {
+                    "下张地图：" + nextMap[id] + "\n地图译名：" + getMapChi(nextMap[id]) + "\n"
+                } else {
+                    ""
+                }
+
+                return "【" + serverName[id] + "】".plus(" ")
+                    .plus(playerCount[id]).plus("/64\n")
+                    .plus("地图：" + map[id] + "\n")
+                    .plus("译名：" + getMapChi(map[id]) + "\n")
+                    .plus("比分：" + ctScore[id] + "/" + tScore[id] + "\n")
+                    .plus(serverNextMap)
+                    .plus("地址：" + serverAddress[id])
+            }
+            else -> {
+                return "无此服务器"
+            }
         }
-        return response
     }
 
     //寻找OBJ
@@ -306,7 +333,7 @@ object UB {
         }
 
         var message = "发现OBJ!\n"
-            .plus("UB社区 "+serverName[id] + "\n")
+            .plus("UB社区 " + serverName[id] + "\n")
 
         message += when (announceReason) {
             "Map" -> {
@@ -458,23 +485,47 @@ object Zed {
         }
     }
 
-    fun dataOutput(): String {
-        var response = "   [僵尸乐园 ZE 服务器数据]\n"
-        for (i in 1 until 8) {
-            response += "\n".plus(serverName[i]).plus("  ")
-                .plus(playerCount[i].toString() + "/" + maxPlayer[i] + "\n")
-                .plus("地图：" + map[i] + "\n")
+    fun dataOutput(id: Int = 0): String {
+        when (id) {
+            0 -> {
+                var response = "   [僵尸乐园 ZE 服务器数据]\n"
+                for (i in 1 until 8) {
+                    response += "\n".plus(serverName[i]).plus("  ")
+                        .plus(playerCount[i].toString() + "/" + maxPlayer[i] + "\n")
+                        .plus("地图：" + map[i] + "\n")
 
-            //检查地图有无翻译
-            if (mapChi[i] != "") {
-                response = response.plus("译名：" + mapChi[i] + "\n")
+                    //检查地图有无翻译
+                    if (mapChi[i] != "") {
+                        response = response.plus("译名：" + mapChi[i] + "\n")
+                    }
+
+                    response = response.plus("地址：" + serverAddress[i] + "\n")
+                        .plus(nextMap[i])
+                        .plus(nominateMap[i])
+                }
+                return response
             }
 
-            response = response.plus("地址：" + serverAddress[i] + "\n")
-                .plus(nextMap[i])
-                .plus(nominateMap[i])
+            in 1..7 -> {
+                var response = serverName[id].plus("  ")
+                    .plus(playerCount[id].toString() + "/" + maxPlayer[id] + "\n")
+                    .plus("地图：" + map[id] + "\n")
+
+                //检查地图有无翻译
+                if (mapChi[id] != "") {
+                    response = response.plus("译名：" + mapChi[id] + "\n")
+                }
+
+                response = response.plus("地址：" + serverAddress[id] + "\n")
+                    .plus(nextMap[id])
+                    .plus(nominateMap[id])
+                return response
+            }
+
+            else -> {
+                return "无此服务器"
+            }
         }
-        return response
     }
 
     private fun sendOBJtoGroup(

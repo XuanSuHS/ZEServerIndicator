@@ -24,15 +24,27 @@ class ZeCommand(perm: Permission) : CompositeCommand(
 
     @SubCommand("UB")
     @Description("UB社区 服务器列表\n短命令/ub\n")
-    suspend fun CommandSender.ub() {
-        webResponse = UB.dataOutput()
+    suspend fun CommandSender.ub(id: String = "0") {
+        val server = if (id.toIntOrNull() != null) {
+            id.toIntOrNull()!!
+        } else {
+            sendMessage("无此服务器")
+            return
+        }
+        val webResponse = UB.dataOutput(server)
         sendMessage(webResponse)
     }
 
     @SubCommand("Zed")
     @Description("僵尸乐园社区 服务器列表\n短命令/zed\n")
-    suspend fun CommandSender.zed() {
-        webResponse = Zed.dataOutput()
+    suspend fun CommandSender.zed(id: String = "0") {
+        val server = if (id.toIntOrNull() != null) {
+            id.toIntOrNull()!!
+        } else {
+            sendMessage("无此服务器")
+            return
+        }
+        webResponse = Zed.dataOutput(server)
         sendMessage(webResponse)
     }
 }
@@ -44,8 +56,14 @@ class UbCommand(perm: Permission) : SimpleCommand(
 ) {
 
     @Handler
-    suspend fun CommandSender.handle() {
-        val webResponse = UB.dataOutput()
+    suspend fun CommandSender.handle(id: String = "0") {
+        val server = if (id.toIntOrNull() != null) {
+            id.toIntOrNull()!!
+        } else {
+            sendMessage("无此服务器")
+            return
+        }
+        val webResponse = UB.dataOutput(server)
         sendMessage(webResponse)
     }
 }
@@ -68,8 +86,14 @@ class ZedCommand(perm: Permission) : SimpleCommand(
     parentPermission = perm
 ) {
     @Handler
-    suspend fun CommandSender.handle() {
-        val webResponse = Zed.dataOutput()
+    suspend fun CommandSender.handle(id: String = "0") {
+        val server = if (id.toIntOrNull() != null) {
+            id.toIntOrNull()!!
+        } else {
+            sendMessage("无此服务器")
+            return
+        }
+        val webResponse = Zed.dataOutput(server)
         sendMessage(webResponse)
     }
 }
@@ -102,7 +126,9 @@ class FindOBJCommand(perm: Permission) : CompositeCommand(
     @SubCommand("status")
     @Description("查看提醒OBJ群列表")
     suspend fun CommandSender.status() {
-        val message = if (FindOBJ.FindON) { "开了" + "\n群：" + FindOBJ.group.id } else {
+        val message = if (FindOBJ.FindON) {
+            "开了" + "\n群：" + FindOBJ.group.id
+        } else {
             "没开"
         }
         sendMessage(message)
@@ -116,7 +142,7 @@ class FindOBJCommand(perm: Permission) : CompositeCommand(
     }
 }
 
-class ZeSetCommand(): CompositeCommand(
+class ZeSetCommand() : CompositeCommand(
     owner = Indicator,
     primaryName = "ze-set"
 ) {
