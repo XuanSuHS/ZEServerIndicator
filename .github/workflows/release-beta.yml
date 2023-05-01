@@ -22,6 +22,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
+          distribution: 'microsoft'
           java-version: '17'
           
       - name: Build with Gradle
@@ -47,6 +48,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/mirai/ZeServerIndicator-${{ steps.remove_v.outputs.tag_name }}.mirai2.jar
-          asset_name: ZeServerIndicator-${{ steps.remove_v.outputs.tag_name }}.mirai2.jar
+          asset_path: ./build/mirai/ZeServerIndicator-${{ github.ref }}.replace('v', '').mirai2.jar
+          asset_name: ZeServerIndicator-${{ github.ref }}.replace('v', '').mirai2.jar
           asset_content_type: application/java-archive
