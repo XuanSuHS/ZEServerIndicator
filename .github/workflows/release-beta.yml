@@ -32,7 +32,7 @@ jobs:
         run: ./gradlew buildPlugin
 
       - name: Get Release Version
-        run: echo "ReleaseVersion=${./gradlew -q printVersion}" >> $GITHUB_ENV
+        run: echo "ReleaseVersion=$(./gradlew -q printVersion)" >> $GITHUB_ENV
 
       - name: Create Release
         id: create_release
