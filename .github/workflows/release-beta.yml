@@ -30,24 +30,27 @@ jobs:
           
       - name: Build with Gradle
         run: ./gradlew buildPlugin
-        
+
+      - name: Get Release Version
+        run: echo "ReleaseVersion=${./gradlew -q printVersion}" >> $GITHUB_ENV
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1.0.0
         env:
           GITHUB_TOKEN: '${{ secrets.BETA_RELEASE_TOKEN }}'
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: v${{ env.ReleaseVersion }}
+          release_name: v${{ env.ReleaseVersion }}
           draft: false
           prerelease: true
           
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: '${{ secrets.BETA_RELEASE_TOKEN }}'
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/mirai/ZeServerIndicator-${{ github.ref }}.replace('v', '').mirai2.jar
-          asset_name: ZeServerIndicator-${{ github.ref }}.replace('v', '').mirai2.jar
+          asset_path: ./build/mirai/ZeServerIndicator-${{ env.ReleaseVersion }}.mirai2.jar
+          asset_name: ZeServerIndicator-${{ env.ReleaseVersion }}.mirai2.jar
           asset_content_type: application/java-archive
