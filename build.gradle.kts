@@ -25,3 +25,9 @@ tasks.register("printVersion") {
         println(project.version)
     }
 }
+
+tasks.register("printName") {
+    doLast {
+        println(project.name)
+    }
+}

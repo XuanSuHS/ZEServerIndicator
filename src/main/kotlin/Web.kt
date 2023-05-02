@@ -111,7 +111,7 @@ object TopZE {
             }
 
             in 1..6 -> {
-                var response = ("\n" + serverName[id])
+                var response = (serverName[id])
                     .plus(" " + playerCount[id].toString() + "/" + maxPlayer[id] + "\n")
                     .plus("地图：" + map[id] + "\n")
 
