@@ -8,12 +8,26 @@ import kotlinx.coroutines.launch
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import top.xuansu.mirai.zeServerIndicator.Indicator.dataFolder
 import top.xuansu.mirai.zeServerIndicator.Indicator.save
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 object TopZE {
 
-    private var mapData = JsonObject()
-    fun webForTopZE(): String {
+    var mapData = JsonObject()
+    private var serverName = Array(7) { "" }
+    private var playerCount = Array(7) { 0 }
+    private var maxPlayer = Array(7) { 0 }
+    private var map = Array(7) { "" }
+    private var mapChinese = Array(7) { "" }
+    private var mapDifficulty = Array(7) { "" }
+    private var mapTag = Array(7) { "" }
+    private var mapInMapData = Array(7) { false }
+
+    fun webForTopZE() {
         val token = Config.topZEToken
         val baseurl = "https://api-clan.rushbgogogo.com/api/v1/systemApp/gameServerRoomsList?mode=ze"
         //构建http请求
@@ -28,27 +42,100 @@ object TopZE {
         response.close()
         //将请求转换为JsonObject并提取其中message数组部分
         val responseDataJSON = JsonParser.parseString(responseData).asJsonObject.getAsJsonArray("message")
-        var serverString = "   [5e ZE 服务器数据]"
         //遍历数组中每一项中所需的数据
         for (i in 0 until responseDataJSON.size()) {
             val server = responseDataJSON.get(i).asJsonObject
-            val name = server.get("Name").toString().replace("\"", "")
-            val playerCount = server.get("PlayerCount").toString().replace("\"", "")
-            val maxPlayer = server.get("MaxPlayer").toString().replace("\"", "")
-            val gameMap = server.get("GameMap").toString().replace("\"", "")
-            serverString = serverString.plus("\n\n$name  ").plus("$playerCount/$maxPlayer\n").plus("地图：$gameMap\n")
+            val id = when (server.get("RoomId").toString().replace("\"", "")) {
+                "60079" -> {
+                    1
+                }
 
-            if (mapData.has(gameMap)) {
-                val mapInfo = mapData.get(gameMap).asJsonObject
-                val mapCNName = mapInfo.get("chinese").toString().replace("\"", "")
-                val mapDifficulty = mapInfo.get("level").toString().replace("\"", "")
-                val mapTag = mapInfo.get("tag").toString().replace("\"", "")
-                serverString = serverString
-                    .plus("译名：$mapCNName\n")
-                    .plus("信息：$mapDifficulty $mapTag")
+                "60109" -> {
+                    2
+                }
+
+                "60112" -> {
+                    3
+                }
+
+                "60053" -> {
+                    4
+                }
+
+                "60847" -> {
+                    5
+                }
+
+                "60848" -> {
+                    6
+                }
+
+                else -> {
+                    0
+                }
+            }
+
+            serverName[id] = server.get("Name").toString().replace("\"", "")
+            playerCount[id] = server.get("PlayerCount").toString().replace("\"", "").toInt()
+            maxPlayer[id] = server.get("MaxPlayer").toString().replace("\"", "").toInt()
+            map[id] = server.get("GameMap").toString().replace("\"", "")
+
+            if (mapData.has(map[id])) {
+                mapInMapData[id] = true
+                val mapInfo = mapData.get(map[id]).asJsonObject
+                mapChinese[id] = mapInfo.get("chinese").toString().replace("\"", "")
+                mapDifficulty[id] = mapInfo.get("level").toString().replace("\"", "")
+                mapTag[id] = mapInfo.get("tag").toString().replace("\"", "")
+            } else {
+                mapInMapData[id] = false
             }
         }
-        return serverString
+    }
+
+    fun getData(id: Int = 0): String {
+        when (id) {
+            0 -> {
+                var response = "   [5e ZE 服务器数据]\n"
+                for (i in 1..6) {
+                    response = response.plus("\n" + serverName[i])
+                        .plus(" " + playerCount[i].toString() + "/" + maxPlayer[i] + "\n")
+                        .plus("地图：" + map[i] + "\n")
+
+                    if (mapInMapData[i]) {
+                        response = response
+                            .plus("译名：" + mapChinese[i] + "\n")
+                            .plus("信息：" + mapDifficulty[i] + " " + mapTag[i] + "\n")
+                    }
+                }
+                return response
+            }
+
+            in 1..6 -> {
+                var response = ("\n" + serverName[id])
+                    .plus(" " + playerCount[id].toString() + "/" + maxPlayer[id] + "\n")
+                    .plus("地图：" + map[id] + "\n")
+
+                if (mapInMapData[id]) {
+                    response = response
+                        .plus("译名：" + mapChinese[id] + "\n")
+                        .plus("信息：" + mapDifficulty[id] + " " + mapTag[id] + "\n")
+                }
+                return response
+            }
+
+            else -> {
+                return "无此服务器"
+            }
+        }
+    }
+
+    fun initializeMapData() {
+        if (dataFolder.resolve("mapData.json").exists()) {
+            mapData = JsonParser.parseString(dataFolder.resolve("mapData.json").readText()).asJsonObject
+        }
+        else {
+            updateMapData()
+        }
     }
 
     fun updateMapData() {
@@ -67,6 +154,9 @@ object TopZE {
             .replace("\"\n\t{", "\":\n\t{")
             .replace("\"MapInfo\"", "")
         mapData = JsonParser.parseString(mapDataJsonOut).asJsonObject
+        val path = Paths.get(File(dataFolder.path, "mapData.json").path)
+        val inputStream = mapDataJsonOut.byteInputStream()
+        Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING)
     }
 }
 
@@ -271,7 +361,7 @@ object UB {
         }
     }
 
-    fun dataOutput(id: Int = 0): String {
+    fun getData(id: Int = 0): String {
         when (id) {
             0 -> {
                 var response = "   [UB 社区 ZE 服务器数据]"
@@ -297,6 +387,7 @@ object UB {
                 }
                 return response
             }
+
             in 1..11 -> {
                 //判定有没有定下张地图
                 if (serverName[id] == "") {
@@ -317,6 +408,7 @@ object UB {
                     .plus(serverNextMap)
                     .plus("地址：" + serverAddress[id])
             }
+
             else -> {
                 return "无此服务器"
             }
@@ -485,11 +577,11 @@ object Zed {
         }
     }
 
-    fun dataOutput(id: Int = 0): String {
+    fun getData(id: Int = 0): String {
         when (id) {
             0 -> {
                 var response = "   [僵尸乐园 ZE 服务器数据]\n"
-                for (i in 1 until 8) {
+                for (i in 1..7) {
                     response += "\n".plus(serverName[i]).plus("  ")
                         .plus(playerCount[i].toString() + "/" + maxPlayer[i] + "\n")
                         .plus("地图：" + map[i] + "\n")

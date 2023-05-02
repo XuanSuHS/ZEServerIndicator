@@ -1,8 +1,5 @@
 package top.xuansu.mirai.zeServerIndicator
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.permission.Permission
@@ -19,7 +16,7 @@ object Indicator: KotlinPlugin(
     JvmPluginDescription(
         id = "top.xuansu.mirai.ze-server-indicator",
         name = "CSGO Ze Server Indicator",
-        version = "0.1.9-B18",
+        version = "0.1.10-B1",
     ) {
         author("XuanSu")
     }
@@ -40,10 +37,6 @@ object Indicator: KotlinPlugin(
 
         reloadPluginConfig(Config)
         reloadPluginData(Data)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            TopZE.updateMapData()
-        }
 
         logger.info { "ZE Server Indicator 已启动" }
         coroutineOnEnable()

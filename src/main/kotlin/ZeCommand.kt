@@ -5,7 +5,6 @@ import net.mamoe.mirai.console.command.CommandSenderOnMessage
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.permission.Permission
-import top.xuansu.mirai.zeServerIndicator.TopZE.webForTopZE
 
 
 class ZeCommand(perm: Permission) : CompositeCommand(
@@ -17,8 +16,14 @@ class ZeCommand(perm: Permission) : CompositeCommand(
 
     @SubCommand("5e")
     @Description("5e TOPZE社区 服务器列表\n短命令/5e\n")
-    suspend fun CommandSender.fe() {
-        webResponse = webForTopZE()
+    suspend fun CommandSender.fe(id: String = "0") {
+        val server = if (id.toIntOrNull() != null) {
+            id.toIntOrNull()!!
+        } else {
+            sendMessage("无此服务器")
+            return
+        }
+        val webResponse = TopZE.getData(server)
         sendMessage(webResponse)
     }
 
@@ -31,7 +36,7 @@ class ZeCommand(perm: Permission) : CompositeCommand(
             sendMessage("无此服务器")
             return
         }
-        val webResponse = UB.dataOutput(server)
+        val webResponse = UB.getData(server)
         sendMessage(webResponse)
     }
 
@@ -44,7 +49,7 @@ class ZeCommand(perm: Permission) : CompositeCommand(
             sendMessage("无此服务器")
             return
         }
-        webResponse = Zed.dataOutput(server)
+        webResponse = Zed.getData(server)
         sendMessage(webResponse)
     }
 }
@@ -63,7 +68,7 @@ class UbCommand(perm: Permission) : SimpleCommand(
             sendMessage("无此服务器")
             return
         }
-        val webResponse = UB.dataOutput(server)
+        val webResponse = UB.getData(server)
         sendMessage(webResponse)
     }
 }
@@ -74,8 +79,14 @@ class FeCommand(perm: Permission) : SimpleCommand(
     parentPermission = perm
 ) {
     @Handler
-    suspend fun CommandSender.handle() {
-        val webResponse = webForTopZE()
+    suspend fun CommandSender.handle(id:String = "0") {
+        val server = if (id.toIntOrNull() != null) {
+            id.toIntOrNull()!!
+        } else {
+            sendMessage("无此服务器")
+            return
+        }
+        val webResponse = TopZE.getData(server)
         sendMessage(webResponse)
     }
 }
@@ -93,7 +104,7 @@ class ZedCommand(perm: Permission) : SimpleCommand(
             sendMessage("无此服务器")
             return
         }
-        val webResponse = Zed.dataOutput(server)
+        val webResponse = Zed.getData(server)
         sendMessage(webResponse)
     }
 }
@@ -151,5 +162,10 @@ class ZeSetCommand() : CompositeCommand(
     suspend fun CommandSender.updateMapData() {
         TopZE.updateMapData()
         sendMessage("地图数据更新完毕")
+    }
+
+    @SubCommand("dev")
+    suspend fun CommandSender.dev() {
+        sendMessage(TopZE.mapData.toString())
     }
 }
