@@ -21,6 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Merge PR Commit to dev
+        run: |
+          git pull origin dev
+          git merge origin/release-beta
+          git push origin dev
+
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
