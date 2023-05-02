@@ -32,7 +32,7 @@ jobs:
 
       - name: Extract Release Version
         run: |
-          tag_name=$(echo "${{ github.event.pull_request.title }}" | sed -E 's/(Prerelease|prerelease)//' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          tag_name=$(echo "${{ github.event.pull_request.title }}" | sed -E 's/(Prerelease|prerelease)//' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | sed -E 's/v//')
           echo "tag_name=$tag_name" >> $GITHUB_ENV
 
       - name: Create Release
