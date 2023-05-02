@@ -21,14 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Merge PR Commit to dev
-        env:
-          GITHUB_TOKEN: '${{ secrets.BETA_RELEASE_TOKEN }}'
-        run: |
-          git checkout dev
-          git merge origin/release-beta
-          git push origin dev
-
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
