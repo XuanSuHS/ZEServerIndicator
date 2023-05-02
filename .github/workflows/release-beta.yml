@@ -25,7 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.BETA_RELEASE_TOKEN }}'
         run: |
-          git pull origin dev
+          git checkout dev
           git merge origin/release-beta
           git push origin dev
 
