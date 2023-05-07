@@ -203,8 +203,8 @@ object UB {
         val serverID = serverData.get("id").toString().toInt()
 
         //将服务器名写入数组
-        serverName[serverID] =
-            serverData.get("name").toString().replace("\"", "").replace(" Q群 749180050", "").replace("UB社区 ", "")
+        serverName[serverID] = "[僵尸逃跑] $serverID#"
+            //serverData.get("name").toString().replace("\"", "").replace(" Q群 749180050", "").replace("UB社区 ", "")
 
         //将服务器地址写入数组
         val serverHost = serverData.get("host").toString().replace("\"", "")
@@ -372,15 +372,14 @@ object UB {
                     }
                     var serverNextMap = ""
                     if (!(nextMap[i] == map[i] || nextMap[i].length <= 3)) {
-                        val serverNextMapChi = getMapChi(nextMap[i])
-                        serverNextMap = "\n下张地图：" + nextMap[i] + "\n地图译名：$serverNextMapChi"
+                        serverNextMap = "\n下张地图：" + nextMap[i]
                     }
 
-                    val serverMapChi = getMapChi(map[i])
-
-                    response += "\n------------------------------\n".plus("【" + serverName[i] + "】").plus(" ")
+                    response += "\n------------------------------\n"
+                        .plus(serverName[i])
+                        .plus("  ")
                         .plus(playerCount[i]).plus("/64\n")
-                        .plus("地图：" + map[i] + "\n译名：$serverMapChi")
+                        .plus("地图：" + map[i])
                         .plus(serverNextMap)
                 }
                 return response
@@ -398,7 +397,7 @@ object UB {
                     ""
                 }
 
-                return "【" + serverName[id] + "】".plus(" ")
+                return serverName[id].plus("  ")
                     .plus(playerCount[id]).plus("/64\n")
                     .plus("地图：" + map[id] + "\n")
                     .plus("译名：" + getMapChi(map[id]) + "\n")
