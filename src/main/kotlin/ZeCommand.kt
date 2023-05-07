@@ -16,40 +16,40 @@ class ZeCommand(perm: Permission) : CompositeCommand(
 
     @SubCommand("5e")
     @Description("5e TOPZE社区 服务器列表\n短命令/5e\n")
-    suspend fun CommandSender.fe(id: String = "0") {
-        val server = if (id.toIntOrNull() != null) {
-            id.toIntOrNull()!!
+    suspend fun CommandSender.fe(server: String = "0") {
+        val id = if (server.toIntOrNull() != null) {
+            server.toIntOrNull()!!
         } else {
             sendMessage("无此服务器")
             return
         }
-        val webResponse = TopZE.getData(server)
+        val webResponse = TopZE.getData(id)
         sendMessage(webResponse)
     }
 
     @SubCommand("UB")
     @Description("UB社区 服务器列表\n短命令/ub\n")
-    suspend fun CommandSender.ub(id: String = "0") {
-        val server = if (id.toIntOrNull() != null) {
-            id.toIntOrNull()!!
+    suspend fun CommandSender.ub(server: String = "0") {
+        val id = if (server.toIntOrNull() != null) {
+            server.toIntOrNull()!!
         } else {
             sendMessage("无此服务器")
             return
         }
-        val webResponse = UB.getData(server)
+        val webResponse = UB.getData(id)
         sendMessage(webResponse)
     }
 
     @SubCommand("Zed")
     @Description("僵尸乐园社区 服务器列表\n短命令/zed\n")
-    suspend fun CommandSender.zed(id: String = "0") {
-        val server = if (id.toIntOrNull() != null) {
-            id.toIntOrNull()!!
+    suspend fun CommandSender.zed(server: String = "0") {
+        val id = if (server.toIntOrNull() != null) {
+            server.toIntOrNull()!!
         } else {
             sendMessage("无此服务器")
             return
         }
-        webResponse = Zed.getData(server)
+        webResponse = Zed.getData(id)
         sendMessage(webResponse)
     }
 }
@@ -61,14 +61,14 @@ class UbCommand(perm: Permission) : SimpleCommand(
 ) {
 
     @Handler
-    suspend fun CommandSender.handle(id: String = "0") {
-        val server = if (id.toIntOrNull() != null) {
-            id.toIntOrNull()!!
+    suspend fun CommandSender.handle(server: String = "0") {
+        val id = if (server.toIntOrNull() != null) {
+            server.toIntOrNull()!!
         } else {
             sendMessage("无此服务器")
             return
         }
-        val webResponse = UB.getData(server)
+        val webResponse = UB.getData(id)
         sendMessage(webResponse)
     }
 }
@@ -79,14 +79,14 @@ class FeCommand(perm: Permission) : SimpleCommand(
     parentPermission = perm
 ) {
     @Handler
-    suspend fun CommandSender.handle(id:String = "0") {
-        val server = if (id.toIntOrNull() != null) {
-            id.toIntOrNull()!!
+    suspend fun CommandSender.handle(server:String = "0") {
+        val id = if (server.toIntOrNull() != null) {
+            server.toIntOrNull()!!
         } else {
             sendMessage("无此服务器")
             return
         }
-        val webResponse = TopZE.getData(server)
+        val webResponse = TopZE.getData(id)
         sendMessage(webResponse)
     }
 }
@@ -97,14 +97,14 @@ class ZedCommand(perm: Permission) : SimpleCommand(
     parentPermission = perm
 ) {
     @Handler
-    suspend fun CommandSender.handle(id: String = "0") {
-        val server = if (id.toIntOrNull() != null) {
-            id.toIntOrNull()!!
+    suspend fun CommandSender.handle(server: String = "0") {
+        val id = if (server.toIntOrNull() != null) {
+            server.toIntOrNull()!!
         } else {
             sendMessage("无此服务器")
             return
         }
-        val webResponse = Zed.getData(server)
+        val webResponse = Zed.getData(id)
         sendMessage(webResponse)
     }
 }

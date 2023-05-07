@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "top.xuansu.mirai.zeServerIndicator"
-version = "0.1.10-B1"
+version = "0.1.10-B2"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")
@@ -23,5 +23,11 @@ dependencies {
 tasks.register("printVersion") {
     doLast {
         println(project.version)
+    }
+}
+
+tasks.register("printName") {
+    doLast {
+        println(project.name)
     }
 }

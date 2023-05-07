@@ -111,7 +111,7 @@ object TopZE {
             }
 
             in 1..6 -> {
-                var response = ("\n" + serverName[id])
+                var response = (serverName[id])
                     .plus(" " + playerCount[id].toString() + "/" + maxPlayer[id] + "\n")
                     .plus("地图：" + map[id] + "\n")
 
@@ -203,8 +203,8 @@ object UB {
         val serverID = serverData.get("id").toString().toInt()
 
         //将服务器名写入数组
-        serverName[serverID] =
-            serverData.get("name").toString().replace("\"", "").replace(" Q群 749180050", "").replace("UB社区 ", "")
+        serverName[serverID] = "[僵尸逃跑] $serverID#"
+            //serverData.get("name").toString().replace("\"", "").replace(" Q群 749180050", "").replace("UB社区 ", "")
 
         //将服务器地址写入数组
         val serverHost = serverData.get("host").toString().replace("\"", "")
@@ -372,18 +372,15 @@ object UB {
                     }
                     var serverNextMap = ""
                     if (!(nextMap[i] == map[i] || nextMap[i].length <= 3)) {
-                        val serverNextMapChi = getMapChi(nextMap[i])
-                        serverNextMap = "下张地图：" + nextMap[i] + "\n地图译名：$serverNextMapChi\n"
+                        serverNextMap = "\n下张地图：" + nextMap[i]
                     }
 
-                    val serverMapChi = getMapChi(map[i])
-
-                    response += "\n------------------------------\n".plus("【" + serverName[i] + "】").plus(" ")
+                    response += "\n------------------------------\n"
+                        .plus(serverName[i])
+                        .plus("  ")
                         .plus(playerCount[i]).plus("/64\n")
-                        .plus("地图：" + map[i] + "\n译名：$serverMapChi" + "\n")
-                        .plus("比分：" + ctScore[i] + "/" + tScore[i] + "\n")
+                        .plus("地图：" + map[i])
                         .plus(serverNextMap)
-                        .plus("地址：" + serverAddress[i])
                 }
                 return response
             }
@@ -400,7 +397,7 @@ object UB {
                     ""
                 }
 
-                return "【" + serverName[id] + "】".plus(" ")
+                return serverName[id].plus("  ")
                     .plus(playerCount[id]).plus("/64\n")
                     .plus("地图：" + map[id] + "\n")
                     .plus("译名：" + getMapChi(map[id]) + "\n")
