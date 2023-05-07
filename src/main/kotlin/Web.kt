@@ -373,17 +373,15 @@ object UB {
                     var serverNextMap = ""
                     if (!(nextMap[i] == map[i] || nextMap[i].length <= 3)) {
                         val serverNextMapChi = getMapChi(nextMap[i])
-                        serverNextMap = "下张地图：" + nextMap[i] + "\n地图译名：$serverNextMapChi\n"
+                        serverNextMap = "\n下张地图：" + nextMap[i] + "\n地图译名：$serverNextMapChi"
                     }
 
                     val serverMapChi = getMapChi(map[i])
 
                     response += "\n------------------------------\n".plus("【" + serverName[i] + "】").plus(" ")
                         .plus(playerCount[i]).plus("/64\n")
-                        .plus("地图：" + map[i] + "\n译名：$serverMapChi" + "\n")
-                        .plus("比分：" + ctScore[i] + "/" + tScore[i] + "\n")
+                        .plus("地图：" + map[i] + "\n译名：$serverMapChi")
                         .plus(serverNextMap)
-                        .plus("地址：" + serverAddress[i])
                 }
                 return response
             }
